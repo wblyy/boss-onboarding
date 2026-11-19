@@ -56,7 +56,7 @@
     border-radius:4px;padding:2px 5px;background:#fff;color:var(--ink3);
   }
 
-  .body{flex:1;display:flex;min-height:0}
+  .body{flex:1;display:flex;min-height:0;position:relative;z-index:4}
 
   /* ---------- rail ---------- */
   .rail{
@@ -399,6 +399,7 @@
   .donehead{text-align:left;max-width:56ch}
   .nextlist{margin-top:4px}
   [data-screen="6"] h1{line-height:1.35}
+  
   .tally2{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:18px 0}
   .tally2 div{padding:12px 20px 12px 0;border-right:1px solid var(--line2)}
   .tally2 div:last-child{border:0}
@@ -540,6 +541,318 @@
     font-size:9.5px;display:flex;align-items:center;justify-content:center;margin-top:1px;
   }
   .nc-read{font-size:9.5px;color:#B5AFA3;margin-right:29px}
+
+  /* ===================================================================
+     信纸主题：把界面收成一封写给你的信。
+     改的是色、字、纸。结构一律不动。
+     =================================================================== */
+  :root{
+    --paper:#F8F4E8;
+    --paper-2:#EFE9D8;
+    --card:#FAF6EA;
+    --ink:#221E18;
+    --ink2:#4A4238;
+    --ink3:#7A7263;
+    --line:#DED6C4;
+    --line2:#EBE4D4;
+    --green:#7A4A34;          /* 主题色：赭 */
+    --green-soft:#F0E3D8;
+    --green-line:#DFC7B4;
+    --amber:#8A6420; --amber-soft:#F6EEDC; --amber-line:#E2D2AF;
+    --brick:#A8382A; --brick-soft:#F4E3DE; --brick-line:#E4C4BC;
+    --serif:"Songti SC","STSong","Noto Serif SC","Source Han Serif SC",Georgia,"Times New Roman",serif;
+    --sans:"PingFang SC","Hiragino Sans GB","Noto Sans SC",-apple-system,sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","SF Mono",Menlo,Consolas,monospace;
+  }
+
+  body{
+    background:#DED7C6;
+    font-family:var(--serif);
+    font-size:15px;
+  }
+  /* ============ 旧纸质感：直接烘进纸面，不用覆盖层 ============
+     纸色渐变 + 四周受潮暗角 + 霉斑颗粒，全部作为 .win 的多重背景。
+     ============================================ */
+  body{background:#D9D1BC}
+
+  ::selection{background:#E8CDC3;color:var(--ink)}
+
+  .win{
+    position:relative;
+    background-color:#F7F2E4;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='600' height='600' filter='url(%23n)' opacity='.30'/%3E%3Cg fill='%237A5F3A' opacity='.13'%3E%3Cellipse cx='86' cy='132' rx='2.2' ry='1.5'/%3E%3Cellipse cx='132' cy='420' rx='1.4' ry='1.9'/%3E%3Cellipse cx='410' cy='88' rx='2.6' ry='1.6'/%3E%3Cellipse cx='470' cy='316' rx='1.6' ry='1.2'/%3E%3Cellipse cx='338' cy='524' rx='2.1' ry='1.4'/%3E%3Cellipse cx='556' cy='470' rx='1.3' ry='1.7'/%3E%3C/g%3E%3Cg stroke='%238B7147' stroke-width='.35' opacity='.09'%3E%3Cpath d='M0 96 Q300 88 600 104' fill='none'/%3E%3Cpath d='M0 372 Q280 366 600 380' fill='none'/%3E%3Cpath d='M0 560 Q320 552 600 566' fill='none'/%3E%3C/g%3E%3C/svg%3E"),
+      radial-gradient(ellipse 74% 58% at 48% 40%, rgba(255,255,255,0) 30%, rgba(150,122,80,.11) 76%, rgba(132,104,64,.24) 100%),
+      radial-gradient(ellipse 34% 24% at 90% 6%, rgba(166,138,90,.13), transparent 70%),
+      radial-gradient(ellipse 30% 22% at 6% 96%, rgba(156,126,80,.14), transparent 72%),
+      linear-gradient(168deg, #FBF7EC 0%, #F6F0DC 44%, #EEE4CB 100%);
+    background-size:600px 600px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+    border:1px solid #C9BFAA;
+    border-radius:2px;
+    box-shadow:
+      inset 0 0 0 1px rgba(255,252,244,.55),
+      inset 0 0 46px rgba(150,124,84,.10),
+      0 2px 4px rgba(50,40,25,.07),
+      0 26px 64px -18px rgba(50,40,25,.30);
+  }
+
+  /* ---- 顶栏：改成信笺页眉 ---- */
+  .chrome{
+    position:relative;z-index:4;
+    height:52px;
+    background:transparent;
+    border-bottom:2px solid var(--ink);
+    padding:0 26px;
+  }
+  .dot{display:none}
+  .chrome .title{
+    margin-left:0;font-family:var(--serif);font-size:12.5px;
+    color:var(--ink3);letter-spacing:.16em;
+  }
+  .chrome .title b{color:var(--ink);font-weight:600;letter-spacing:.2em}
+  .chrome .right{font-family:var(--sans);font-size:10.5px;letter-spacing:.1em;color:var(--ink3)}
+  .proto-badge{
+    font-family:var(--sans);font-size:9px;letter-spacing:.12em;
+    color:var(--brick);background:transparent;border:1px solid var(--brick-line);
+    border-radius:0;padding:1px 5px;
+  }
+  .chrome .right .kbd{
+    font-family:var(--mono);font-size:9.5px;border:1px solid var(--line);
+    border-radius:2px;padding:1px 5px;background:transparent;color:var(--ink3);
+  }
+
+  /* ---- 左侧：改成书脊式的目录 ---- */
+  .rail{
+    width:206px;background:transparent;
+    border-right:1px solid var(--line);
+    padding:24px 0 16px;
+  }
+  .brand{padding:0 22px 20px;border-bottom:1px solid var(--ink);margin-bottom:16px}
+  .brand .mark{
+    font-family:var(--serif);font-size:15px;font-weight:600;letter-spacing:.18em;
+  }
+  .brand .mark i{
+    width:14px;height:14px;border-radius:0;background:var(--brick);transform:rotate(45deg);
+  }
+  .brand .mark i:after{display:none}
+  .brand .sub{
+    margin-top:9px;font-family:var(--serif);font-size:11.5px;line-height:1.85;
+    color:var(--ink3);letter-spacing:.04em;
+  }
+
+  .steps{padding:0 14px}
+  .steps li{
+    padding:8px 8px;border-radius:0;font-family:var(--serif);font-size:13px;
+    color:#9C9384;letter-spacing:.05em;
+  }
+  .steps li .n{
+    font-family:var(--mono);font-size:9.5px;width:18px;
+    color:#B8AF9D;letter-spacing:.04em;
+  }
+  .steps li.done{color:var(--ink2)}
+  .steps li.done .n{color:var(--green)}
+  .steps li.now{
+    background:transparent;border:0;box-shadow:none;color:var(--ink);font-weight:600;
+  }
+  .steps li.now .n{color:var(--brick);font-weight:600}
+  .steps li.now:before{
+    left:-14px;top:12px;bottom:12px;width:1px;border-radius:0;background:var(--brick);
+  }
+
+  .rail-foot{
+    font-family:var(--serif);font-size:10.5px;line-height:1.85;color:#A69C89;
+    border-top:1px solid var(--line);padding-top:10px;letter-spacing:.04em;
+  }
+  .rail-foot .badge{color:var(--green);font-size:10.5px}
+
+  /* ---- 正文：诉说感的来源 ---- */
+  .eyebrow{
+    font-family:var(--sans);font-size:10px;letter-spacing:.24em;
+    color:var(--brick);text-transform:none;margin-bottom:16px;
+  }
+  h1{
+    font-family:var(--serif);font-size:31px;line-height:1.5;font-weight:600;
+    letter-spacing:.05em;margin-bottom:16px;
+  }
+  h1 em{color:var(--brick)}
+  .lede{
+    font-family:var(--serif);font-size:14.5px;line-height:2.05;
+    color:var(--ink2);max-width:42ch;letter-spacing:.02em;
+  }
+  .lede b{font-weight:600;color:var(--ink);border-bottom:2px solid #E8CDC3}
+
+  .btn{
+    font-family:var(--serif);font-size:13px;font-weight:500;letter-spacing:.1em;
+    padding:8px 20px;border-radius:0;border:1px solid var(--ink);
+    background:transparent;color:var(--ink);transition:.18s;
+  }
+  .btn:hover{background:rgba(28,26,23,.05);border-color:var(--ink)}
+  .btn.primary{background:var(--brick);color:#FBF7EF;border-color:var(--brick)}
+  .btn.primary:hover{background:#8E2C1E}
+  .btn.ghost{border-color:transparent;color:var(--ink3);letter-spacing:.06em}
+  .btn.ghost:hover{color:var(--ink);background:transparent}
+  .footbar{border-top:1px solid var(--line);padding-top:16px;margin-top:18px}
+  .footbar .hint{font-family:var(--serif);font-size:11.5px;color:var(--ink3);letter-spacing:.03em}
+
+  /* ---- 指标行：像报纸的速览栏 ---- */
+  .metrics{border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);padding:14px 0}
+  .metrics .mq{font-family:var(--sans);font-size:10.5px;letter-spacing:.14em;color:var(--ink3)}
+  .metrics .mn{font-family:var(--serif);font-size:25px;font-weight:600;letter-spacing:.02em}
+  .metrics .mn.hi{color:var(--ink)}
+  .metrics .marr{color:var(--line);font-size:12px}
+  .metrics .mpill{
+    background:var(--brick);border-radius:0;padding:6px 11px;
+    font-family:var(--sans);font-size:10px;letter-spacing:.16em;
+    box-shadow:none;
+  }
+  .metrics .mpill b{font-family:var(--serif);font-size:15px;font-weight:600;letter-spacing:.02em}
+  .metrics .mnote{font-family:var(--serif);font-size:10.5px;color:#A69C89;letter-spacing:.03em}
+
+  /* ---- 聊天示意：信纸上的一个引用块 ---- */
+  .nochat{
+    border:1px solid var(--line);border-radius:0;background:var(--card);
+    max-width:540px;box-shadow:none;position:relative;
+  }
+  .nochat:before{
+    content:"原文";position:absolute;left:-1px;top:-1px;
+    font-family:var(--sans);font-size:9px;letter-spacing:.2em;
+    background:var(--ink);color:var(--paper);padding:2px 8px;
+  }
+  .nc-top{
+    background:transparent;border-bottom:1px solid var(--line);
+    padding:9px 13px 9px;margin-top:17px;border-top:1px dotted var(--line);
+  }
+  .nc-who{font-family:var(--serif);font-size:12.5px;letter-spacing:.06em}
+  .nc-st{font-family:var(--sans);font-size:9px;letter-spacing:.12em;border-radius:0;background:transparent;border:1px solid var(--line);color:var(--ink3);padding:0 4px}
+  .nc-bubble{
+    background:#F0EDE4;color:var(--ink2);border:1px solid var(--line);
+    border-radius:0;font-family:var(--serif);font-size:12.5px;line-height:1.95;
+    padding:11px 13px;
+  }
+  .nc-ava{background:transparent;border:1px solid var(--line);border-radius:0;font-family:var(--serif);font-size:10px;color:var(--ink3)}
+  .nc-read{font-family:var(--serif);font-size:10px;color:#A69C89;letter-spacing:.06em}
+  .nc-read:before{content:"（";}
+  .nc-read:after{content:"）";}
+
+  /* ---- 表单 ---- */
+  .chip{
+    font-family:var(--serif);font-size:12px;letter-spacing:.04em;
+    border:1px solid var(--line);border-radius:0;padding:5px 12px;background:transparent;
+    color:var(--ink3);
+  }
+  .chip.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+  .chip.on.no{background:var(--brick);border-color:var(--brick);color:#FBF7EF}
+  .frow .label{font-family:var(--serif);font-size:12px;letter-spacing:.08em;color:var(--ink2)}
+  .rulecount{font-family:var(--serif);font-size:11.5px;color:var(--ink3)}
+
+  .drop{border:1px dashed var(--line);border-radius:0;background:transparent}
+  .drop .t{font-family:var(--serif);font-size:13px;letter-spacing:.04em}
+  .drop .s{font-family:var(--serif);font-size:11.5px}
+  .parsed{border:1px solid var(--line);border-radius:0;background:var(--card)}
+  .parsed .hd{border-bottom:1px dotted var(--line)}
+  .readbox{border-left:2px solid var(--brick)}
+
+  /* ---- 日志与清单 ---- */
+  .log{border:1px solid var(--line);border-radius:0;background:var(--card)}
+  .log div{border-bottom:1px dotted var(--line2)}
+  .job{border:1px solid var(--line);border-radius:0;background:transparent}
+  
+  .job.open{border-color:var(--ink)}
+  .jtitle{font-family:var(--serif);font-size:15px;letter-spacing:.04em}
+  .jtitle .co{color:var(--ink3)}
+  .jmeta{font-family:var(--serif);font-size:11px;letter-spacing:.03em}
+  .score .n{font-family:var(--serif);font-size:22px;font-weight:600}
+  .score .l{font-family:var(--sans);font-size:9px;letter-spacing:.14em;color:var(--ink3)}
+  .jdetail{background:var(--paper-2);border-top:1px solid var(--line)}
+  .why{border-radius:0;font-family:var(--serif);font-size:10.5px;letter-spacing:.02em}
+  .jhook .hk{font-family:var(--sans);border-radius:0;background:transparent;border:1px solid var(--brick-line);color:var(--brick)}
+  .msgbox{border:1px solid var(--line);border-radius:0;background:var(--card);font-family:var(--serif);font-size:12.5px;line-height:2}
+  .dsec .h{font-family:var(--serif);font-size:11.5px;letter-spacing:.1em;color:var(--ink3)}
+
+  /* ---- 交接 ---- */
+  .mock{background:var(--paper-2);border-left:1px solid var(--line)}
+  .mocklabel{font-family:var(--sans);letter-spacing:.12em;color:#A69C89}
+  .phone{border-radius:2px;border:1px solid var(--line);background:var(--card);box-shadow:none}
+  .phead{border-bottom:1px solid var(--line)}
+  .pchat{background:transparent}
+  .bubble{border-radius:0;font-family:var(--serif);font-size:12.5px;line-height:1.9}
+  .bubble.them{background:var(--card);border:1px solid var(--line)}
+  .bubble.me{background:var(--ink);color:var(--paper)}
+  .pinput{background:transparent;border-top:1px solid var(--line)}
+  .pinput .txt{border:1px solid var(--line);border-radius:0;background:var(--card);font-family:var(--serif)}
+  .send{border-radius:0;background:var(--brick);border-color:var(--brick);font-family:var(--serif);letter-spacing:.1em}
+  .send:hover{background:#8E2C1E}
+  .handcard{border:1px solid var(--brick-line);border-radius:0;background:#F6EAE4}
+  .handcard .h{color:var(--brick);font-family:var(--serif);letter-spacing:.06em}
+  .editnote{border-left:2px solid var(--brick);font-family:var(--serif);font-size:11.5px}
+
+  /* ---- 落款感：第 7 步 ---- */
+  .tally2{border-top:2px solid var(--ink);border-bottom:1px solid var(--ink)}
+  .tally2 b{font-family:var(--serif);font-size:22px;font-weight:600}
+  .tally2 span{font-family:var(--serif);font-size:10.5px;letter-spacing:.03em}
+  .nextlist li{border-bottom:1px dotted var(--line);font-family:var(--serif);font-size:12.5px}
+  .nextlist .num{font-family:var(--mono);color:#B8AF9D}
+  .nextlist b{letter-spacing:.03em}
+
+  /* 印章 */
+  .stamprow{display:flex;justify-content:flex-end;margin-top:-6px}
+  .stamp{
+    position:relative;width:72px;height:72px;
+    border:2px solid var(--brick);border-radius:2px;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--brick);font-family:var(--serif);font-size:19px;line-height:1.15;
+    letter-spacing:.1em;text-align:center;
+    transform:rotate(-7deg);opacity:.72;
+    pointer-events:none;
+  }
+  .stamp span{display:block}
+  .stamp:after{
+    content:"";position:absolute;inset:4px;border:1px solid var(--brick);opacity:.45;
+  }
+  .stamp span{font-size:17px;line-height:1.2}
+
+  /* ---- 更旧的纸：折痕、边缘磨损、页脚 ---- */
+  .win{
+    background-blend-mode: multiply, multiply, multiply, multiply, normal;
+  }
+  /* 两道折痕：像被折过两次塞进信封 */
+  .body:before{
+    content:"";position:absolute;inset:0;pointer-events:none;z-index:5;
+    background:
+      linear-gradient(to bottom, transparent 32.8%, rgba(146,120,80,.055) 33%, rgba(255,253,246,.30) 33.2%, transparent 33.6%),
+      linear-gradient(to bottom, transparent 66.3%, rgba(146,120,80,.05) 66.5%, rgba(255,253,246,.28) 66.7%, transparent 67.1%);
+  }
+
+  /* 页脚：手写的落款位置 */
+  .railsig{
+    margin:0 18px;padding-top:10px;border-top:1px dotted var(--line);
+    font-family:var(--serif);font-size:10px;line-height:1.9;color:#A69C89;
+    letter-spacing:.1em;
+  }
+  .railsig b{color:var(--ink3);font-weight:500}
+
+  /* 清单：加极淡的横线，像稿纸 */
+  [data-screen="4"] #jobs{
+    background-image:repeating-linear-gradient(to bottom, transparent 0 33px, rgba(150,126,86,.055) 33px 34px);
+  }
+  .job{background:rgba(250,246,234,.55)}
+
+  /* 步骤栏更细 */
+  .steps li{padding:7px 8px}
+  .steps li + li{margin-top:1px}
+
+  /* 印章挪到右下，别压按钮 */
+  .stamprow{margin-top:10px;margin-bottom:-4px}
+  .stamp{
+    width:70px;height:70px;border-width:2px;
+    box-shadow:0 0 0 3px rgba(168,56,42,.06);
+  }
+
+  /* 内文段落首行缩进，读着更像信 */
+  .lede + .lede{margin-top:10px}
+
+  /* 表格与卡片的边线略旧 */
+  .parsed,.log,.msgbox,.nochat{box-shadow:inset 0 0 22px rgba(150,124,84,.05)}
 </style>
 </head>
 <body>
@@ -569,6 +882,9 @@
         <li data-s="5"><span class="n">06</span>你点发送</li>
         <li data-s="6"><span class="n">07</span>之后</li>
       </ul>
+      <div class="railsig">
+        <b>2026 · 冬</b><br>第 一 版
+      </div>
       <div class="rail-foot">
         <div class="badge"><s></s>本地解析 · 不上传</div>
         不代替你发送。不批量投递。<br>不保存登录态。
@@ -867,6 +1183,7 @@
           <li><span class="num">03</span><div><b>被拒的会攒成一份复盘。</b><br><span class="aside">同一类岗位连拒三次以上，问题基本不在你能力上，在某段经历你没讲清楚。到时候我指给你看是哪段。</span></div></li>
         </ul>
 
+        <div class="stamprow"><div class="stamp"><span>祝你好运<br>尽快上岸</span></div></div>
         <div class="spacer"></div>
         <div class="footbar">
           <span class="hint">这套流程每天跑一次，第二次会快些，它记得你砍掉过什么。</span>
