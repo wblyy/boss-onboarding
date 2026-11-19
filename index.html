@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>求职判断台 · 首次体验原型</title>
+<title>回血 · 找工作</title>
 <style>
   :root{
     --paper:#F8F7F4; --card:#FFFFFF; --ink:#171614; --ink2:#57534C; --ink3:#8B857B;
@@ -547,13 +547,13 @@
      改的是色、字、纸。结构一律不动。
      =================================================================== */
   :root{
-    --paper:#F8F4E8;
-    --paper-2:#EFE9D8;
-    --card:#FAF6EA;
+    --paper:#F7F4EC;
+    --paper-2:#F1ECE0;
+    --card:#FBF8F1;
     --ink:#221E18;
     --ink2:#4A4238;
-    --ink3:#7A7263;
-    --line:#DED6C4;
+    --ink3:#6E675C;
+    --line:#D9D1C0;
     --line2:#EBE4D4;
     --green:#7A4A34;          /* 主题色：赭 */
     --green-soft:#F0E3D8;
@@ -566,36 +566,67 @@
   }
 
   body{
-    background:#DED7C6;
+    background:#EDE8DC;
     font-family:var(--serif);
     font-size:15px;
   }
-  /* ============ 旧纸质感：直接烘进纸面，不用覆盖层 ============
-     纸色渐变 + 四周受潮暗角 + 霉斑颗粒，全部作为 .win 的多重背景。
-     ============================================ */
-  body{background:#D9D1BC}
+
+  /* 纸张颗粒：一层极轻的噪点，压掉屏幕的塑料感。就这一层。 */
+  body:after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+    opacity:.16;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+  }
 
   ::selection{background:#E8CDC3;color:var(--ink)}
 
   .win{
     position:relative;
-    background-color:#F7F2E4;
-    background-image:
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='600' height='600' filter='url(%23n)' opacity='.30'/%3E%3Cg fill='%237A5F3A' opacity='.13'%3E%3Cellipse cx='86' cy='132' rx='2.2' ry='1.5'/%3E%3Cellipse cx='132' cy='420' rx='1.4' ry='1.9'/%3E%3Cellipse cx='410' cy='88' rx='2.6' ry='1.6'/%3E%3Cellipse cx='470' cy='316' rx='1.6' ry='1.2'/%3E%3Cellipse cx='338' cy='524' rx='2.1' ry='1.4'/%3E%3Cellipse cx='556' cy='470' rx='1.3' ry='1.7'/%3E%3C/g%3E%3Cg stroke='%238B7147' stroke-width='.35' opacity='.09'%3E%3Cpath d='M0 96 Q300 88 600 104' fill='none'/%3E%3Cpath d='M0 372 Q280 366 600 380' fill='none'/%3E%3Cpath d='M0 560 Q320 552 600 566' fill='none'/%3E%3C/g%3E%3C/svg%3E"),
-      radial-gradient(ellipse 74% 58% at 48% 40%, rgba(255,255,255,0) 30%, rgba(150,122,80,.11) 76%, rgba(132,104,64,.24) 100%),
-      radial-gradient(ellipse 34% 24% at 90% 6%, rgba(166,138,90,.13), transparent 70%),
-      radial-gradient(ellipse 30% 22% at 6% 96%, rgba(156,126,80,.14), transparent 72%),
-      linear-gradient(168deg, #FBF7EC 0%, #F6F0DC 44%, #EEE4CB 100%);
-    background-size:600px 600px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
-    border:1px solid #C9BFAA;
-    border-radius:2px;
+    background:var(--paper);
+    border:1px solid #DAD2C1;
+    border-radius:3px;
     box-shadow:
-      inset 0 0 0 1px rgba(255,252,244,.55),
-      inset 0 0 46px rgba(150,124,84,.10),
-      0 2px 4px rgba(50,40,25,.07),
-      0 26px 64px -18px rgba(50,40,25,.30);
+      0 1px 2px rgba(50,40,25,.06),
+      0 20px 50px -16px rgba(50,40,25,.22);
   }
 
+
+  /* ---- 一级导航：三个 tab ---- */
+  .tabs{
+    display:flex;flex-direction:column;gap:0;
+    padding:0 14px 14px;margin-bottom:14px;border-bottom:1px solid var(--line);
+  }
+  .tab{
+    display:flex;align-items:center;gap:10px;
+    padding:9px 8px;font-family:var(--serif);font-size:13.5px;
+    color:#9C9384;letter-spacing:.1em;text-decoration:none;
+    transition:color .16s;
+  }
+  .tab:hover{color:var(--ink2)}
+  .tab.soon{cursor:default;color:#B3AA97}
+  .tab.soon:hover{color:#B3AA97}
+  .tab.soon .ti{border-style:dashed;color:#C2B9A6}
+  .tab .tsoon{
+    margin-left:auto;font-family:var(--sans);font-size:8.5px;
+    letter-spacing:.1em;color:#C2B9A6;border:1px solid var(--line);
+    padding:0 4px;
+  }
+  .tab .ti{
+    width:20px;height:20px;flex:none;display:flex;align-items:center;justify-content:center;
+    font-size:10.5px;color:#B8AF9D;border:1px solid var(--line);
+    letter-spacing:0;transition:.16s;
+  }
+  .tab.is-on{color:var(--ink);font-weight:600}
+  .tab.is-on .ti{
+    background:var(--brick);border-color:var(--brick);color:#FBF7EF;font-weight:400;
+  }
+  .tab.is-on .tn:after{
+    content:"·";color:var(--brick);margin-left:5px;
+  }
+  .subhead{
+    font-family:var(--sans);font-size:9.5px;letter-spacing:.2em;
+    color:#B0A794;padding:0 22px 9px;text-transform:uppercase;
+  }
   /* ---- 顶栏：改成信笺页眉 ---- */
   .chrome{
     position:relative;z-index:4;
@@ -811,31 +842,7 @@
   }
   .stamp span{font-size:17px;line-height:1.2}
 
-  /* ---- 更旧的纸：折痕、边缘磨损、页脚 ---- */
-  .win{
-    background-blend-mode: multiply, multiply, multiply, multiply, normal;
-  }
-  /* 两道折痕：像被折过两次塞进信封 */
-  .body:before{
-    content:"";position:absolute;inset:0;pointer-events:none;z-index:5;
-    background:
-      linear-gradient(to bottom, transparent 32.8%, rgba(146,120,80,.055) 33%, rgba(255,253,246,.30) 33.2%, transparent 33.6%),
-      linear-gradient(to bottom, transparent 66.3%, rgba(146,120,80,.05) 66.5%, rgba(255,253,246,.28) 66.7%, transparent 67.1%);
-  }
-
-  /* 页脚：手写的落款位置 */
-  .railsig{
-    margin:0 18px;padding-top:10px;border-top:1px dotted var(--line);
-    font-family:var(--serif);font-size:10px;line-height:1.9;color:#A69C89;
-    letter-spacing:.1em;
-  }
-  .railsig b{color:var(--ink3);font-weight:500}
-
   /* 清单：加极淡的横线，像稿纸 */
-  [data-screen="4"] #jobs{
-    background-image:repeating-linear-gradient(to bottom, transparent 0 33px, rgba(150,126,86,.055) 33px 34px);
-  }
-  .job{background:rgba(250,246,234,.55)}
 
   /* 步骤栏更细 */
   .steps li{padding:7px 8px}
@@ -852,27 +859,286 @@
   .lede + .lede{margin-top:10px}
 
   /* 表格与卡片的边线略旧 */
-  .parsed,.log,.msgbox,.nochat{box-shadow:inset 0 0 22px rgba(150,124,84,.05)}
+
+  /* ===================================================================
+     信纸主题 + 三栏桌面端
+     左：产品 tab / 中：主对话 / 右：判断台（随话题变化）
+     =================================================================== */
+  :root{
+    --paper:#F7F4EC; --paper-2:#F1ECE0; --card:#FBF8F1;
+    --ink:#1C1A17; --ink2:#57514A; --ink3:#6E675C;
+    --line:#D9D1C0; --line2:#E7E0D0;
+    --green:#B03A28; --green-soft:#F3E4DE; --green-line:#E2C9C0;
+    --brick:#B03A28; --brick-soft:#F4E3DE; --brick-line:#E4C4BC;
+    --amber:#8A6420; --amber-soft:#F6EEDC; --amber-line:#E2D2AF;
+    --serif:"Songti SC","STSong","Noto Serif SC","Source Han Serif SC",Georgia,serif;
+    --sans:"PingFang SC","Hiragino Sans GB","Noto Sans SC",-apple-system,sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","SF Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:#EDE8DC;color:var(--ink);
+    font-family:var(--serif);font-size:15px;line-height:1.8;
+    -webkit-font-smoothing:antialiased;
+    display:flex;align-items:center;justify-content:center;padding:22px;
+  }
+  body:after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+    opacity:.15;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+  }
+  ::selection{background:#E8CDC3}
+
+  .win{
+    position:relative;width:min(1280px,98vw);height:min(820px,96vh);
+    background:var(--paper);border:1px solid #DAD2C1;border-radius:4px;
+    box-shadow:0 1px 2px rgba(50,40,25,.06),0 22px 54px -18px rgba(50,40,25,.24);
+    display:flex;flex-direction:column;overflow:hidden;
+  }
+
+  /* ---- 顶栏 ---- */
+  .chrome{
+    height:46px;flex:none;display:flex;align-items:center;
+    padding:0 22px;border-bottom:1px solid var(--line);
+  }
+  .chrome .title{font-family:var(--serif);font-size:12.5px;color:var(--ink3);letter-spacing:.14em}
+  .chrome .title b{color:var(--ink);font-weight:600;letter-spacing:.18em}
+  .chrome .right{margin-left:auto;display:flex;gap:12px;align-items:center;
+    font-family:var(--sans);font-size:10px;letter-spacing:.1em;color:var(--ink3)}
+  .proto-badge{font-size:9px;letter-spacing:.1em;color:var(--brick);border:1px solid var(--brick-line);padding:1px 5px}
+  .chrome .kbd{font-family:var(--mono);font-size:9.5px;border:1px solid var(--line);padding:1px 5px;color:var(--ink3)}
+
+  .shell{flex:1;display:flex;min-height:0}
+
+  /* ---- 左：产品导航 ---- */
+  .rail{
+    width:190px;flex:none;border-right:1px solid var(--line);
+    display:flex;flex-direction:column;padding:20px 0 14px;
+  }
+  .brand{padding:0 20px 16px;border-bottom:1px solid var(--ink);margin-bottom:14px}
+  .brand .mark{font-size:15px;font-weight:600;letter-spacing:.2em;display:flex;align-items:center;gap:8px}
+  .brand .mark i{width:9px;height:9px;background:var(--brick);transform:rotate(45deg);flex:none}
+  .brand .sub{margin-top:8px;font-size:11px;line-height:1.8;color:var(--ink3);letter-spacing:.04em}
+
+  .tabs{display:flex;flex-direction:column;padding:0 12px 12px;border-bottom:1px solid var(--line);margin-bottom:12px}
+  .tab{display:flex;align-items:center;gap:9px;padding:8px;font-size:13.5px;color:#9C9384;letter-spacing:.1em;text-decoration:none}
+  .tab .ti{width:19px;height:19px;flex:none;display:flex;align-items:center;justify-content:center;
+    font-size:10px;color:#B8AF9D;border:1px solid var(--line)}
+  .tab.is-on{color:var(--ink);font-weight:600}
+  .tab.is-on .ti{background:var(--brick);border-color:var(--brick);color:#FBF7EF}
+  .tab.soon{cursor:default;color:#B3AA97}
+  .tab.soon .ti{border-style:dashed;color:#C2B9A6}
+  .tab .tsoon{margin-left:auto;font-family:var(--sans);font-size:8px;letter-spacing:.1em;color:#C2B9A6;border:1px solid var(--line);padding:0 3px}
+
+  .subhead{font-family:var(--sans);font-size:9px;letter-spacing:.2em;color:#B0A794;padding:0 20px 8px}
+  .steps{list-style:none;padding:0 12px;flex:1}
+  .steps li{display:flex;gap:9px;align-items:flex-start;padding:7px 8px;font-size:12.5px;color:#A79E8B;letter-spacing:.05em;border-radius:2px;transition:.18s}
+  .steps li .n{font-family:var(--mono);font-size:9.5px;width:16px;flex:none;color:#BFB6A3;padding-top:1px}
+  .steps li.done{color:var(--ink2)}
+  .steps li.done .n{color:var(--green)}
+  .steps li.now{color:var(--ink);font-weight:600;background:#FCFAF4}
+  .steps li.now .n{color:var(--brick);font-weight:600}
+  .rail-foot{margin:0 16px;padding-top:10px;border-top:1px solid var(--line);font-size:10px;line-height:1.75;color:#A69C89}
+  .rail-foot .badge{color:var(--green);margin-bottom:5px;display:flex;align-items:center;gap:5px}
+  .rail-foot .badge s{width:4px;height:4px;background:var(--green);border-radius:50%}
+
+  /* ---- 中：主对话 ---- */
+  .talk{flex:1;min-width:0;display:flex;flex-direction:column;border-right:1px solid var(--line)}
+  .talkhead{
+    flex:none;padding:16px 26px 12px;border-bottom:1px solid var(--line2);
+    display:flex;align-items:baseline;gap:10px;
+  }
+  .talkhead .who{font-size:14px;font-weight:600;letter-spacing:.08em}
+  .talkhead .st{font-family:var(--sans);font-size:10px;letter-spacing:.1em;color:var(--green)}
+  .talkhead .meta{margin-left:auto;font-family:var(--mono);font-size:9.5px;color:#B0A794}
+
+  .log{flex:1;overflow-y:auto;padding:22px 26px 10px;scroll-behavior:smooth}
+  .turn{margin-bottom:16px;display:flex;gap:10px;align-items:flex-start}
+  .turn .ava{
+    width:24px;height:24px;flex:none;border-radius:2px;display:flex;align-items:center;justify-content:center;
+    font-size:10px;letter-spacing:0;
+  }
+  .turn.bot .ava{background:var(--brick);color:#FBF7EF}
+  .turn.me{flex-direction:row-reverse}
+  .turn.me .ava{background:transparent;border:1px solid var(--line);color:var(--ink3)}
+  .say{
+    max-width:min(58ch,86%);padding:10px 13px;font-size:13px;line-height:1.95;
+    border-radius:2px;letter-spacing:.01em;
+  }
+  .turn.bot .say{background:var(--card);border:1px solid var(--line2);color:var(--ink2)}
+  .turn.me .say{background:#F0E9DA;border:1px solid var(--line);color:var(--ink)}
+  .say b{color:var(--ink);font-weight:600}
+  .say .kw{border-bottom:1.5px solid #E8CDC3}
+  .say .small{font-size:11.5px;color:var(--ink3);display:block;margin-top:6px}
+
+  /* 对话里的选项 */
+  .opts{display:flex;flex-wrap:wrap;gap:7px;margin-left:34px;margin-bottom:18px}
+  .opt{
+    font-family:var(--serif);font-size:12px;letter-spacing:.04em;
+    padding:6px 13px;border:1px solid var(--line);background:transparent;
+    color:var(--ink2);cursor:pointer;transition:.16s;
+  }
+  .opt:hover{border-color:var(--ink);color:var(--ink);background:#FCFAF4}
+  .opt.pick{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+  .opt:disabled{opacity:.45;cursor:default}
+
+  /* 对话里的简历卡 / 岗位卡 */
+  .cardline{
+    margin:0 0 16px 34px;border:1px solid var(--line);background:var(--card);
+    max-width:min(58ch,86%);
+  }
+  .cardline .hd{
+    padding:8px 12px;border-bottom:1px dotted var(--line);
+    font-size:11px;letter-spacing:.1em;color:var(--ink3);display:flex;align-items:center;gap:7px;
+  }
+  .cardline .hd .ok{color:var(--green)}
+  .cardline .rows{padding:8px 12px}
+  .cardline .r{display:flex;gap:10px;font-size:12px;line-height:1.8;padding:2px 0}
+  .cardline .r .k{width:52px;flex:none;color:var(--ink3);font-size:11px}
+  .cardline .r .v{color:var(--ink2)}
+  .cardline .r .v b{color:var(--ink)}
+
+  .composer{
+    flex:none;border-top:1px solid var(--line);padding:12px 26px 14px;
+  }
+  .cbox{
+    display:flex;gap:10px;align-items:flex-end;
+    border:1px solid var(--line);background:var(--card);padding:9px 12px;
+  }
+  .cbox textarea{
+    flex:1;border:0;background:transparent;resize:none;outline:none;
+    font-family:var(--serif);font-size:13px;line-height:1.8;color:var(--ink);
+    max-height:90px;min-height:24px;
+  }
+  .cbox textarea::placeholder{color:#B3AA97}
+  .cbox .snd{
+    font-family:var(--serif);font-size:12px;letter-spacing:.1em;
+    padding:5px 14px;border:1px solid var(--ink);background:var(--ink);color:var(--paper);
+    cursor:pointer;transition:.16s;flex:none;
+  }
+  .cbox .snd:hover{background:#2C2A26}
+  .cbox .snd:disabled{opacity:.35;cursor:not-allowed}
+  .underhint{font-size:10.5px;color:#A69C89;margin-top:7px;letter-spacing:.03em}
+
+  /* ---- 右：判断台 ---- */
+  .panel{
+    width:344px;flex:none;display:flex;flex-direction:column;background:#F4F0E5;
+  }
+  .phead{
+    flex:none;padding:14px 18px 11px;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:8px;
+  }
+  .phead .t{font-size:11.5px;letter-spacing:.16em;color:var(--ink2);font-weight:600}
+  .phead .c{margin-left:auto;font-family:var(--mono);font-size:9px;color:#B0A794}
+  .pbody{flex:1;overflow-y:auto;padding:16px 18px}
+
+  .pempty{
+    border:1px dashed var(--line);padding:18px 14px;text-align:center;
+    font-size:11.5px;line-height:1.9;color:#A69C89;
+  }
+  .psec{margin-bottom:20px}
+  .psec .h{
+    font-size:10.5px;letter-spacing:.14em;color:var(--ink3);margin-bottom:9px;
+    padding-bottom:6px;border-bottom:1px solid var(--line);
+  }
+  .pbig{font-size:26px;font-weight:600;letter-spacing:.02em;line-height:1.2}
+  .pbig small{font-size:11px;font-weight:400;color:var(--ink3);letter-spacing:.06em;margin-left:6px}
+  .psub{font-size:11px;color:var(--ink3);line-height:1.8;margin-top:5px}
+
+  /* 右栏岗位列表 */
+  .pjob{
+    border:1px solid var(--line);background:var(--card);margin-bottom:7px;
+    cursor:pointer;transition:.16s;
+  }
+  .pjob:hover{border-color:#C6BDA9}
+  .pjob.on{border-color:var(--ink)}
+  .pjob .top{display:flex;align-items:flex-start;gap:8px;padding:9px 10px}
+  .pjob .rk{font-family:var(--mono);font-size:9px;color:#B0A794;padding-top:2px;flex:none}
+  .pjob .tt{font-size:12px;line-height:1.5;flex:1;min-width:0}
+  .pjob .tt b{font-weight:600;display:block}
+  .pjob .tt span{font-size:10.5px;color:var(--ink3)}
+  .pjob .sc{font-family:var(--mono);font-size:13px;color:var(--ink);flex:none}
+  .pjob .hk{
+    padding:0 10px 9px 27px;font-size:10.5px;line-height:1.7;color:var(--ink3);
+    display:flex;gap:5px;
+  }
+  .pjob .hk i{font-style:normal;color:var(--green);flex:none}
+
+  /* 右栏话术 */
+  .pmsg{
+    border:1px solid var(--line);background:var(--card);padding:11px 12px;
+    font-size:12px;line-height:1.95;color:var(--ink2);
+  }
+  .pmsg .ch{margin-top:8px;font-family:var(--mono);font-size:9px;color:#B0A794}
+  .pwhy{margin-top:10px}
+  .pwhy .w{display:flex;gap:7px;font-size:11px;line-height:1.75;color:var(--ink2);margin-bottom:7px}
+  .pwhy .wn{
+    flex:none;width:14px;height:14px;border-radius:50%;background:#EDE6D6;color:var(--ink3);
+    font-family:var(--mono);font-size:8.5px;display:flex;align-items:center;justify-content:center;margin-top:3px;
+  }
+
+  .pfoot{
+    flex:none;border-top:1px solid var(--line);padding:10px 18px 12px;
+    font-size:10px;line-height:1.7;color:#A69C89;display:flex;align-items:center;gap:8px;
+  }
+  .pfoot .dot{width:4px;height:4px;border-radius:50%;background:var(--green);flex:none}
+
+  /* 右栏：第7步小结 */
+  .psum{display:flex;gap:14px;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:10px 0}
+  .psum div{flex:1}
+  .psum b{display:block;font-size:19px;font-weight:600;line-height:1.2}
+  .psum span{font-size:9.5px;color:var(--ink3);letter-spacing:.04em}
+
+  .plist{list-style:none}
+  .plist li{padding:9px 0;border-bottom:1px dotted var(--line);font-size:11.5px;line-height:1.75}
+  .plist li:last-child{border:0}
+  .plist b{display:block;font-weight:600;margin-bottom:2px}
+  .plist span{color:var(--ink3);font-size:10.5px}
+
+  .stamp{
+    margin:14px auto 0;width:70px;height:70px;border:2px solid var(--brick);
+    display:flex;align-items:center;justify-content:center;text-align:center;
+    color:var(--brick);font-size:16px;line-height:1.2;letter-spacing:.1em;
+    transform:rotate(-7deg);opacity:.7;position:relative;
+  }
+  .stamp:after{content:"";position:absolute;inset:4px;border:1px solid var(--brick);opacity:.45}
+
+  @media (max-width:1100px){
+    .panel{width:300px}
+    .rail{width:168px}
+  }
+
 </style>
 </head>
 <body>
+
 <div class="win">
   <div class="chrome">
-    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-    <div class="title"><b>求职判断台</b> &nbsp;·&nbsp; 首次体验</div>
-    <div class="right">
+    <span class="title"><b>回血</b> · 找工作</span>
+    <span class="right">
       <span class="proto-badge">原型示意</span>
       <span id="stepcount">1 / 7</span>
       <span class="kbd">⌘ →</span>
-    </div>
+    </span>
   </div>
 
-  <div class="body">
+  <div class="shell">
+
+    <!-- ========== 左：导航 ========== -->
     <aside class="rail">
       <div class="brand">
-        <div class="mark"><i></i>求职判断台</div>
-        <div class="sub">读岗位，写话术。<br>发送这一步我不碰。</div>
+        <div class="mark"><i></i>回血</div>
+        <div class="sub">这一段，我陪你走。</div>
       </div>
+
+      <div class="tabs">
+        <div class="tab is-on"><span class="ti">找</span><span class="tn">找工作</span></div>
+        <div class="tab soon" title="这个 tab 还在做"><span class="ti">省</span><span class="tn">省钱</span><span class="tsoon">待做</span></div>
+        <div class="tab soon" title="这个 tab 还在做"><span class="ti">赚</span><span class="tn">赚钱</span><span class="tsoon">待做</span></div>
+      </div>
+
+      <div class="subhead">找工作 · 7 步</div>
       <ul class="steps" id="steps">
         <li data-s="0"><span class="n">01</span>开场</li>
         <li data-s="1"><span class="n">02</span>放简历</li>
@@ -882,433 +1148,48 @@
         <li data-s="5"><span class="n">06</span>你点发送</li>
         <li data-s="6"><span class="n">07</span>之后</li>
       </ul>
-      <div class="railsig">
-        <b>2026 · 冬</b><br>第 一 版
-      </div>
       <div class="rail-foot">
         <div class="badge"><s></s>本地解析 · 不上传</div>
-        不代替你发送。不批量投递。<br>不保存登录态。
+        不代替你发送。不批量投递。
       </div>
     </aside>
 
-    <main class="main" id="main">
-
-      <!-- ============ 1 ============ -->
-      <section class="screen is-active" data-screen="0">
-        <div class="eyebrow">第一次用 · 大概三分钟</div>
-        <h1>少一点已读不回。</h1>
-
-        <!-- 已读不回：一条真实形态的聊天示意 -->
-        <div class="nochat" aria-label="一条被已读但没有回复的消息">
-          <div class="nc-top">
-            <span class="nc-who">顾晓 · HR</span>
-            <span class="nc-st">在线</span>
-          </div>
-          <div class="nc-body">
-            <div class="nc-msgwrap">
-              <div class="nc-bubble">您好！看您已经读过我的消息，如有疑问，我这边随时给您解答。<br>如果不合适，烦请告知下原因，我好及时调整，如果觉得还不错，是否可以约时间面试一下呢？</div>
-              <div class="nc-ava">陈</div>
-            </div>
-            <div class="nc-read">已读</div>
-          </div>
+    <!-- ========== 中：主对话 ========== -->
+    <main class="talk">
+      <div class="talkhead">
+        <span class="who">回血</span>
+        <span class="st">在线</span>
+        <span class="meta">找工作 · 会话 01</span>
+      </div>
+      <div class="log" id="log"></div>
+      <div class="composer">
+        <div class="cbox">
+          <textarea id="ta" rows="1" placeholder="说点什么，或者说「开始」…"></textarea>
+          <button class="snd" id="snd">发送</button>
         </div>
-
-        <p class="lede" style="margin-top:16px">改写你的开场白，让 HR 愿意回第一句。</p>
-        <!-- PLACEHOLDER: 19.4% 与 n=143 为占位示例值，上线前必须替换为实测数据 -->
-        <div class="metrics">
-          <div class="m"><span class="mq">不用工具<sup>1</sup></span><span class="mn">4.7%</span></div>
-          <span class="marr">→</span>
-          <div class="m"><span class="mq">用这套流程<sup>2</sup></span><span class="mn hi">19.4%</span></div>
-          <span class="mpill">回复率 <b>4.1×</b></span>
-        </div>
-
-        <div class="footbar" style="border:0;padding:12px 0 0;margin:0">
-          <div class="grow"></div>
-          <button class="btn primary" data-go="1">开始 <span class="arrow">→</span></button>
-        </div>
-      </section>
-
-      <!-- ============ 2 ============ -->
-      <section class="screen" data-screen="1">
-        <div class="eyebrow">第 2 步 · 读简历</div>
-        <h1>简历放进来，我来读。</h1>
-        <p class="lede" style="margin-bottom:26px">读完之后，我会说一件事：你这份简历里，真正值钱的是哪几条。<br>大部分人写简历时，把自己做过的事全写成了同类。</p>
-
-        <div class="cols">
-          <div>
-            <div class="drop" id="drop">
-              <div class="ico"></div>
-              <div class="t">把简历拖进来，或者点一下选文件</div>
-              <div class="s">在这台电脑上解析，文件不会上传</div>
-            </div>
-            <div class="parsed" id="parsed" style="display:none">
-              <div class="hd"><span class="ok">✓</span><span class="name">陈默_产品经理_2026.pdf</span><span class="meta">解析 11 段 · 0.8s</span></div>
-              <div class="rows">
-                <div class="prow"><div class="k">经历</div><div class="v"><b>3 段</b>　SaaS 产品 4 年 → 教育科技 2 年 → 独立项目 1 年</div></div>
-                <div class="prow"><div class="k">能力</div><div class="v">需求分析、数据看板、跨部门推动、B 端交付</div></div>
-                <div class="prow"><div class="k">疑点</div><div class="v" style="color:var(--amber)">最近 7 个月空档；第三段是个人项目，无雇主</div></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="readbox" id="readbox" style="display:none">
-            <div class="h">我读完的第一反应</div>
-            <p>你写了三段经历，看起来是三个方向。但我读到的是同一件事：<b>把散落在各部门、靠人盯的流程，收拾成能跑起来的系统</b>。</p>
-            <p>所以只搜"产品经理"会吃亏。真正该找的是那些<b>正在把手工作业搬上系统</b>的公司。他们 JD 里会写"梳理流程""推动落地""跨部门协同"，不会写"需要你"。</p>
-            <div><span class="tag">B端流程</span><span class="tag">数据看板</span><span class="tag">跨部门</span></div>
-            <p style="margin-top:14px;font-size:11.5px;color:var(--ink3)">这几条会影响等下用什么词去搜。觉得不对，下一步可以改。</p>
-          </div>
-        </div>
-
-        <div class="spacer"></div>
-        <div class="footbar">
-          <button class="btn ghost" data-go="0">← 返回</button>
-          <div class="grow"></div>
-          <span class="hint" id="hint2">先放一份简历</span>
-          <button class="btn primary" id="next2" disabled data-go="2">继续 <span class="arrow">→</span></button>
-        </div>
-      </section>
-
-      <!-- ============ 3 ============ -->
-      <section class="screen" data-screen="2">
-        <div class="eyebrow">第 3 步 · 你要什么</div>
-        <h1>把话说死一点。</h1>
-        <p class="lede" style="margin-top:-4px;margin-bottom:8px;font-size:12.5px">这里填得越具体，等下被砍掉的岗位就越多。砍得多是好事，省下的是你读 JD 的时间。</p>
-
-        <div style="margin-top:6px">
-          <div class="frow">
-            <div class="label">想做的方向</div>
-            <div class="ctrl" id="dirs">
-              <span class="chip on">B 端产品</span>
-              <span class="chip on">流程数字化</span>
-              <span class="chip">产品运营</span>
-              <span class="chip">项目经理</span>
-              <span class="chip">+ 自定义</span>
-            </div>
-          </div>
-          <div class="frow">
-            <div class="label">薪资底线</div>
-            <div class="ctrl">
-              <div class="salary">
-                <span class="num" id="salnum">18k</span>
-                <div class="track"><i id="salbar"></i><s id="salpin" style="left:52%"></s></div>
-                <span style="font-size:11px;color:var(--ink3)">以下不聊</span>
-              </div>
-            </div>
-          </div>
-          <div class="frow">
-            <div class="label">城市</div>
-            <div class="ctrl">
-              <span class="chip on">上海</span>
-              <span class="chip on">杭州</span>
-              <span class="chip">远程</span>
-              <span class="chip">苏州</span>
-            </div>
-          </div>
-          <div class="frow">
-            <div class="label">绝对不要</div>
-            <div class="ctrl" id="nopes">
-              <span class="chip on no">外包 / 驻场</span>
-              <span class="chip on no">单休</span>
-              <span class="chip">保险</span>
-              <span class="chip">电销</span>
-              <span class="chip">金融借贷</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="spacer"></div>
-        <div class="footbar">
-          <button class="btn ghost" data-go="1">← 返回</button>
-          <span class="rulecount" style="margin-left:8px">生成 <b id="ruleN">5</b> 条过滤规则</span>
-          <div class="grow"></div>
-          <span class="hint">每条规则都会写在清单里，觉得砍错了可以关掉</span>
-          <button class="btn primary" data-go="3">开始扫描 <span class="arrow">→</span></button>
-        </div>
-      </section>
-
-      <!-- ============ 4 ============ -->
-      <section class="screen" data-screen="3">
-        <div class="eyebrow">第 4 步 · 扫岗位</div>
-        <div class="scanwrap">
-          <div class="scanhead">
-            <span class="big" id="cnt">0</span>
-            <span class="unit">个岗位已读</span>
-            <span style="margin-left:auto;font-size:11.5px;color:var(--ink3)" id="kept">留下 0</span>
-          </div>
-          <div class="progress"><i id="pbar"></i></div>
-          <div class="log" id="log"></div>
-          <div class="tally">
-            <div><b id="t1">0</b>读完</div>
-            <div><b id="t2">0</b>薪资不符</div>
-            <div><b id="t3">0</b>疑似僵尸岗</div>
-            <div><b id="t4">0</b>公司存疑</div>
-            <div><b id="t5" style="color:var(--green)">0</b>值得看</div>
-          </div>
-          <div class="footbar" style="border:0;padding-top:14px;margin-top:0">
-            <span class="hint" id="scanhint">正在读岗位池，一条条过</span>
-            <div class="grow"></div>
-            <button class="btn primary" id="next4" disabled data-go="4">看清单 <span class="arrow">→</span></button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============ 5 ============ -->
-      <section class="screen" data-screen="4">
-        <div class="listhead">
-          <div>
-            <div class="eyebrow" style="margin-bottom:8px">第 5 步 · 清单</div>
-            <h1 style="font-size:23px;margin:0">排名第一的，是最可能回你的那个</h1>
-          </div>
-          <div class="stat">
-            <span>扫了 <b>1,247</b></span>
-            <span>留下 <b>9</b></span>
-            <span>砍掉 <b>1,238</b></span>
-          </div>
-        </div>
-        <p class="sortnote">
-          按 <code>对方回你的概率 × 你想去的程度</code> 排。不是按简历匹配度排，匹配度高的岗可能压根没人看。点开一条看判断依据，翻到最底下能看到被砍掉的原因分布。
-        </p>
-
-        <div id="jobs"></div>
-
-        <div class="rejected" id="rej">
-          <button id="rejbtn">被砍掉的 1,238 个，都因为什么 <span style="font-size:9px">▾</span></button>
-          <div class="rejbody">
-            <div class="bar"><span>薪资不够</span><em style="width:52%"></em><u>641</u></div>
-            <div class="bar"><span>像僵尸岗</span><em style="width:25%"></em><u>310</u></div>
-            <div class="bar"><span>外包驻场</span><em style="width:14%"></em><u>172</u></div>
-            <div class="bar"><span>公司有疑点</span><em style="width:7%"></em><u>89</u></div>
-            <div class="bar"><span>技能不对口</span><em style="width:2%"></em><u>26</u></div>
-            <div style="margin-top:10px;color:#ADA69A">"像僵尸岗"指岗位挂了很久没刷新、同类岗重复挂、招聘方长期不在线。这类占比最高，也是最容易白投的。</div>
-          </div>
-        </div>
-
-        <div class="spacer"></div>
-        <div class="footbar">
-          <button class="btn ghost" data-go="2">← 改条件重扫</button>
-          <div class="grow"></div>
-          <span class="hint">从第一名开始最省事</span>
-          <button class="btn primary" data-go="5">跟第 1 名打招呼 <span class="arrow">→</span></button>
-        </div>
-      </section>
-
-      <!-- ============ 6 ============ -->
-      <section class="screen" data-screen="5">
-        <div class="stage">
-          <div class="assist">
-            <div class="inner">
-            <div class="eyebrow">第 6 步 · 交给你</div>
-            <h1 style="font-size:21px;margin-bottom:14px">话填好了，发送键在你手上。</h1>
-
-            <div class="handcard">
-              <div class="h"><span>↗</span> 已经填进右边对话框，光标停在末尾</div>
-              <p>想改就改，整段重写也行。<b>我没有替你按发送。</b>你比我清楚那句话像不像你说的。</p>
-            </div>
-
-            <div class="dsec" style="margin-bottom:14px">
-              <div class="h">这样写，为什么更容易被回</div>
-              <div class="whylist" style="margin-top:6px">
-                <div class="w"><span class="wn">1</span><div><b>第一句对上他 JD 里的词。</b>HR 只看这一行，两秒判断"干过没有"。"从 0 到 1 搭建"是他自己写的。</div></div>
-                <div class="w"><span class="wn">2</span><div><b>给了一个不像编的数字。</b>31 个节点、14 天压到 6 天。能被追问的细节才像真的。</div></div>
-                <div class="w"><span class="wn">3</span><div><b>结尾把话题交回去。</b>"你们卡在哪一步"比"期待您的回复"回答成本低得多。</div></div>
-              </div>
-            </div>
-
-            <div class="dsec" style="margin-bottom:16px">
-              <div class="h">哪些话我故意没写</div>
-              <div class="neglist">
-                <div class="n"><span class="x">×</span><div><s>期待您的回复</s><em>写的人太多，看到等于没看到</em></div></div>
-                <div class="n"><span class="x">×</span><div><s>学习能力强，希望给个机会</s><em>说的是你是谁，不是干过什么</em></div></div>
-                <div class="n"><span class="x">×</span><div><s>两百字自我介绍</s><em>一屏装不下，划走</em></div></div>
-              </div>
-            </div>
-
-            <div class="editnote">
-              <b>哪句话念出来不像你说的，删掉。</b>发出去的东西得是你的。
-            </div>
-
-            <div class="spacer"></div>
-            </div>
-
-            <div class="footbar">
-              <button class="btn ghost" data-go="4">← 回清单</button>
-              <div class="grow"></div>
-              <button class="btn" id="mockcopy">重新复制</button>
-              <button class="btn primary" id="sent" disabled>我发出了 <span class="arrow">→</span></button>
-            </div>
-          </div>
-          <div class="mock">
-            <div class="mocklabel"><span>◱</span> BOSS直聘 · 模拟窗口（只读演示）</div>
-            <div class="phone">
-              <div class="phead">
-                <div class="av">周</div>
-                <div>
-                  <div class="who">周敏</div>
-                  <div class="role">招聘负责人 · 恒犀科技</div>
-                </div>
-                <div class="st">刚刚活跃</div>
-              </div>
-              <div class="pchat" id="pchat">
-                <div class="sysmsg">2026-11-19 14:22</div>
-                <div class="bubble them">你好，看到你在看我们的「B端产品经理」岗位，有什么想了解的可以问我～</div>
-              </div>
-              <div class="pinput">
-                <div class="txt empty" id="ptxt"></div>
-                <button class="send armed" id="psend">发送</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============ 7 ============ -->
-      <section class="screen" data-screen="6">
-        <div class="donehead">
-          <div class="eyebrow">第 7 步 · 之后</div>
-          <h1 style="font-size:22px">发出一个了。还剩 8 个。</h1>
-          <p class="lede" style="font-size:12.5px">不会给你弹"投递成功"。发出去不算数，有人回才算。</p>
-        </div>
-
-        <div class="tally2">
-          <div><b>9</b><span>值得开口的岗位</span></div>
-          <div><b>1</b><span>你刚发的</span></div>
-          <div><b>78</b><span>那句话的字数</span></div>
-          <div><b>0</b><span>我替你按的发送</span></div>
-        </div>
-
-        <ul class="nextlist">
-          <li><span class="num">01</span><div><b>明天这个点，我提醒你回来看看。</b><br><span class="aside">盯的是谁回了，不是你投了几个。</span></div></li>
-          <li><span class="num">02</span><div><b>剩下 8 个，一个一个来。</b><br><span class="aside">每个岗位的话都不一样。同一段复制八遍发出去，跟没发是一样的。</span></div></li>
-          <li><span class="num">03</span><div><b>被拒的会攒成一份复盘。</b><br><span class="aside">同一类岗位连拒三次以上，问题基本不在你能力上，在某段经历你没讲清楚。到时候我指给你看是哪段。</span></div></li>
-        </ul>
-
-        <div class="stamprow"><div class="stamp"><span>祝你好运<br>尽快上岸</span></div></div>
-        <div class="spacer"></div>
-        <div class="footbar">
-          <span class="hint">这套流程每天跑一次，第二次会快些，它记得你砍掉过什么。</span>
-          <div class="grow"></div>
-          <button class="btn" data-go="4">看剩下 8 个</button>
-          <button class="btn primary" data-go="0">重新体验</button>
-        </div>
-      </section>
-
-      <div class="toast" id="toast"></div>
+        <div class="underhint" id="hint">按 Enter 发送 · Shift+Enter 换行</div>
+      </div>
     </main>
+
+    <!-- ========== 右：判断台 ========== -->
+    <aside class="panel">
+      <div class="phead">
+        <span class="t">判断台</span>
+        <span class="c" id="pstage">等待开始</span>
+      </div>
+      <div class="pbody" id="pbody">
+        <div class="pempty">这里会跟着对话变。<br>聊到哪一步，它就显示那一步的依据。</div>
+      </div>
+      <div class="pfoot"><span class="dot"></span>数字来自公开信息与你的简历，不来自你的账号</div>
+    </aside>
+
   </div>
 </div>
 
 <script>
-const $ = (s,r=document)=>r.querySelector(s);
-const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+const $ = s=>document.querySelector(s);
+const $$ = s=>[...document.querySelectorAll(s)];
 
-let cur = 0;
-const total = 7;
-
-function show(n){
-  cur = n;
-  $$('.screen').forEach(el=>el.classList.toggle('is-active', +el.dataset.screen===n));
-  $$('#steps li').forEach(el=>{
-    const s=+el.dataset.s;
-    el.classList.toggle('now', s===n);
-    el.classList.toggle('done', s<n);
-  });
-  $('#stepcount').textContent = (n+1)+' / '+total;
-  if(n===3 && !scanStarted){ scanStarted=true; setTimeout(runScan,420); }
-  if(n===5) setTimeout(primeHandoff, 260);
-}
-
-document.addEventListener('click', e=>{
-  const go = e.target.closest('[data-go]');
-  if(go && !go.disabled){ show(+go.dataset.go); }
-});
-
-document.addEventListener('keydown', e=>{
-  if(e.key==='ArrowRight' && (e.metaKey||e.ctrlKey)) show(Math.min(cur+1,total-1));
-  if(e.key==='ArrowLeft' && (e.metaKey||e.ctrlKey)) show(Math.max(cur-1,0));
-});
-
-function toast(msg){
-  const t=$('#toast'); t.textContent=msg; t.classList.add('on');
-  clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('on'),1900);
-}
-
-/* ---------- step 2 ---------- */
-$('#drop').addEventListener('click', ()=>{
-  $('#drop').style.display='none';
-  $('#parsed').style.display='block';
-  $('#readbox').style.display='block';
-  const b=$('#next2'); b.disabled=false; $('#hint2').textContent='';
-  toast('已在本机解析 · 未上传');
-});
-
-/* ---------- step 3 chips ---------- */
-$$('.chip').forEach(c=>{
-  if(c.textContent.includes('+')) return;
-  c.addEventListener('click', ()=>{
-    if(c.classList.contains('no')) c.classList.toggle('on');
-    else c.classList.toggle('on');
-    $('#ruleN').textContent = $$('.chip.on').length + 1;
-  });
-});
-
-/* ---------- step 4 scan ---------- */
-let scanStarted=false;
-const targets=[1247,641,310,172,89,9];
-const lines=[
-  ['①','读取岗位池 1,247 条',' m'],
-  ['','—— 恒犀科技 B端产品经理｜18-25k·13薪',' m'],
-  ['','—— 某互金 增长产品｜25-40k',' m'],
-  ['✕','薪资 12-15k，低于底线',' skip'],
-  ['✕','同类岗位挂了 6 个，最近一次刷新 4 天前',' skip'],
-  ['✕','外包 / 驻场，命中你的黑名单',' skip'],
-  ['','—— 蝉鸣数据 流程产品｜20-28k',' m'],
-  ['!','公司 2025-08 注册，社保 0 人',' skip'],
-  ['✓','恒犀科技：3 个岗在招，HR 昨天来过，JD 对上三条线',' hit'],
-  ['','—— 拾光教育 产品经理｜16-22k',' m'],
-  ['✕','单休',' skip'],
-  ['✓','蝉鸣数据：做了 4 年，社保 46 人，岗位 11 天没刷新',' hit'],
-  ['','……',' m']
-];
-
-function runScan(){
-  let i=0, got=0, kept=0;
-  const log=$('#log'), cnt=$('#cnt'), pbar=$('#pbar');
-  const tEls=[$('#t1'),$('#t2'),$('#t3'),$('#t4'),$('#t5')];
-  const tick=()=>{
-    const step = Math.ceil(1247/64);
-    i = Math.min(1247, i+step);
-    cnt.textContent = i.toLocaleString();
-    pbar.style.width = (i/1247*100)+'%';
-
-    const r = i/1247;
-    tEls[0].textContent = i.toLocaleString();
-    tEls[1].textContent = Math.round(641*r).toLocaleString();
-    tEls[2].textContent = Math.round(310*r).toLocaleString();
-    tEls[3].textContent = Math.round(172*r).toLocaleString();
-    tEls[4].textContent = Math.round(9*r);
-
-    if(Math.random()>0.55 && lines.length){
-      const [mark,msg,cls]=lines.shift();
-      const d=document.createElement('div');
-      const now=new Date();
-      d.innerHTML='<span class="t">'+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0')+'</span><span class="m '+cls+'">'+(mark?mark+' ':'')+msg+'</span>';
-      log.appendChild(d);
-      while(log.children.length>9) log.removeChild(log.firstChild);
-    }
-
-    if(i<1247) setTimeout(tick, 46);
-    else{
-      $('#kept').textContent='留下 9';
-      $('#scanhint').textContent='扫描完成 · 9 个值得看';
-      const b=$('#next4'); b.disabled=false;
-      toast('1,247 → 9');
-    }
-  };
-  tick();
-}
-
-/* ---------- step 5 jobs ---------- */
 const jobs=[
   {rank:'01',title:'B端产品经理',co:'恒犀科技',pay:'18-25k · 13薪',city:'上海 · 静安',score:86,
    why:[['有 B 端交付经历','ok'],['JD 原文：从 0 到 1 搭建','ok'],['HR 昨日活跃','ok'],['公司成立 2 年，偏早期','warn']],
@@ -1414,110 +1295,380 @@ const jobs=[
    src:'企查查 · 2026-11-18'}
 ];
 
-function renderJobs(){
-  const wrap=$('#jobs');
-  wrap.innerHTML = jobs.map((j,i)=>`
-    <article class="job" data-i="${i}">
-      <div class="jrow">
-        <div class="rank">${j.rank}</div>
-        <div class="jmain">
-          <div class="jtitle">${j.title} <span class="co">${j.co}</span></div>
-          <div class="jmeta"><span class="pay">${j.pay}</span><span>${j.city}</span><span>·</span><span>展开看怎么写第一句</span></div>
-          <div class="jwhy">${j.why.map(([t,k])=>`<span class="why ${k==='ok'?'':k}">${t}</span>`).join('')}</div>
-          <div class="jhook"><span class="hk">钩子</span>${j.hook}</div>
-        </div>
-        <div class="score"><div class="n">${j.score}</div><div class="l">回你概率</div></div>
-      </div>
-      <div class="jdetail">
-        <div class="dgrid">
-          <div>
-            <div class="dsec">
-              <div class="h">第一句话这么写 · ${j.msg.length} 字</div>
-              <div class="msgbox">${j.msg}<div class="ch">${j.msg.length} 字 · 一屏内看得完</div></div>
-            </div>
-            <div class="dsec" style="margin-top:14px">
-              <div class="h">为什么这样写更容易被回</div>
-              <div class="whylist">
-                ${j.whyReply.map((t,k)=>`<div class="w"><span class="wn">${k+1}</span><div>${t}</div></div>`).join('')}
-              </div>
-            </div>
-          </div>
-          <div>
-            <div class="dsec">
-              <div class="h">这家公司</div>
-              <div class="risklist">
-                ${j.risk.filter(([k])=>k!=='warn').map(([k,t])=>`<div class="r ${k}"><i>${k==='ok'?'✓':'×'}</i><div>${t}</div></div>`).join('')}
-                ${j.risk.some(([k])=>k==='warn')?`<button class="risk-toggle">还有 ${j.risk.filter(([k])=>k==='warn').length} 条要留意 ▾</button><div class="risk-more">${j.risk.filter(([k])=>k==='warn').map(([k,t])=>`<div class="r warn"><i>!</i><div>${t}</div></div>`).join('')}</div>`:''}
-                <div class="src">${j.src}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </article>
-  `).join('');
+/* ================= 状态 ================= */
+const S = {
+  step: 0,          // 0..6
+  resume: null,     // {name,years,roles}
+  wants: [],        // 城市/薪资/方向
+  scanned: false,
+  pickedJob: null,  // index
+  sent: false
+};
 
-  $$('.job').forEach(el=>{
-    el.querySelector('.jrow').addEventListener('click',()=>{
-      const wasOpen = el.classList.contains('open');
-      $$('.job').forEach(o=>o.classList.remove('open'));
-      if(!wasOpen){
-        el.classList.add('open');
-        const box = document.querySelector('[data-screen="4"] #jobs');
-        box.scrollTo({top: el.offsetTop - box.offsetTop - 2, behavior:'smooth'});
+/* ================= 左栏进度 ================= */
+function setStep(n){
+  S.step = n;
+  $$('#steps li').forEach(li=>{
+    const i = +li.dataset.s;
+    li.classList.toggle('done', i<n);
+    li.classList.toggle('now', i===n);
+  });
+  $('#stepcount').textContent = (n+1)+' / 7';
+}
+
+/* ================= 对话渲染 ================= */
+const log = $('#log');
+function bubble(who, html, opts){
+  const t = document.createElement('div');
+  t.className = 'turn '+(who==='me'?'me':'bot');
+  t.innerHTML = `<div class="ava">${who==='me'?'我':'回'}</div><div class="say">${html}</div>`;
+  log.appendChild(t);
+  scrollDown();
+  return t;
+}
+function card(html){
+  const d = document.createElement('div');
+  d.className = 'cardline';
+  d.innerHTML = html;
+  log.appendChild(d);
+  scrollDown();
+}
+function options(list, cb){
+  const w = document.createElement('div');
+  w.className = 'opts';
+  list.forEach(o=>{
+    const b=document.createElement('button');
+    b.className='opt'; b.textContent=o;
+    b.onclick=()=>{
+      $$('.opt').forEach(x=>x.disabled=true);
+      b.classList.add('pick');
+      ta.value='';
+      cb(o);
+    };
+    w.appendChild(b);
+  });
+  log.appendChild(w);
+  scrollDown();
+}
+function scrollDown(){ requestAnimationFrame(()=>{ log.scrollTop = log.scrollHeight; }); }
+
+/* ================= 右栏 ================= */
+const P = $('#pbody'), PS = $('#pstage');
+function panel(stage, html){
+  PS.textContent = stage;
+  P.innerHTML = html || '';
+  P.scrollTop = 0;
+}
+
+/* ================= 打字机感：一句一句来 ================= */
+function later(fn, ms){ return setTimeout(fn, ms||420); }
+
+/* ================= 各步的对话脚本 ================= */
+
+const RESUME = {
+  name:'陈默', years:'4 年', city:'上海',
+  rows:[
+    ['方向','B 端产品 · SaaS 交付'],
+    ['经历','恒犀科技 2022.06 — 至今'],
+    ['做过','两次从 0 到 1 的流程线上化'],
+    ['带过','7 个部门的权限重构']
+  ]
+};
+
+/* --- 第 1 步：开场 --- */
+function boot(){
+  setStep(0);
+  panel('等待开始', `
+    <div class="psec">
+      <div class="h">这个判断台做什么</div>
+      <div class="psub">它读岗位，标出哪些值得聊，<br>再写给每一个的第一句话。</div>
+    </div>
+    <div class="psec">
+      <div class="h">它不做什么</div>
+      <div class="plist" style="list-style:none">
+        <li style="border-bottom:1px dotted var(--line);padding:7px 0"><b>不替你发</b><span>发送键留给你</span></li>
+        <li style="border-bottom:1px dotted var(--line);padding:7px 0"><b>不批量投</b><span>一个岗位一句话</span></li>
+        <li style="padding:7px 0"><b>不动你账号</b><span>不登录、不保存登录态</span></li>
+      </div>
+    </div>
+    <div class="pempty">在左边打个「开始」，<br>或者直接说你在找什么岗位。</div>
+  `);
+  bubble('bot',
+    `我是回血。这一段我陪你走。<br><br>
+     找工作这件事，我能帮你的不是"多投"，是<span class="kw">少投错</span>。<br>
+     你把简历给我，我把今天值得开口的岗位挑出来，一条一条告诉你第一句话怎么写。`);
+  later(()=>{
+    bubble('bot', `开始之前先说清楚一件事：<b>发送键我不碰。</b><span class="small">我写，你发。发出去的东西得是你认的。</span>`);
+    options(['开始','我先说说我在找什么'], pick=>{
+      bubble('me', pick);
+      if(pick==='开始') later(askResume, 360);
+      else {
+        bubble('bot','行，你说。想找什么方向、什么城市、什么价位，讲多讲少都行。');
       }
     });
-    const tg = el.querySelector('.risk-toggle');
-    if(tg) tg.addEventListener('click', e=>{ e.stopPropagation(); tg.parentElement.classList.toggle('show-more'); });
+  }, 520);
+}
+
+/* --- 第 2 步：放简历 --- */
+function askResume(){
+  setStep(1);
+  bubble('bot', `先把简历给我。<span class="small">拖进来，或者贴文字。不上传，在你机器上读。</span>`);
+  panel('读简历', `
+    <div class="psec">
+      <div class="h">等你放简历</div>
+      <div class="psub">简历进来之后，我会先说一件事：<br>你这份简历里，真正值钱的是哪几条。</div>
+    </div>
+    <div class="pempty">大部分人写简历，<br>把做过的事全写成了同一类。</div>
+  `);
+  later(()=>{
+    card(`
+      <div class="hd"><span class="ok">✓</span> 陈默_B端产品_2026.pdf <span style="margin-left:auto;font-family:var(--mono);font-size:9px">128 KB</span></div>
+      <div class="rows">
+        ${RESUME.rows.map(([k,v])=>`<div class="r"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('')}
+      </div>
+    `);
+    bubble('bot', `读完了。四段经历里，最值钱的只有一条：<br>
+      <b>你把销售和交付的线下流程拆成了 31 个节点，14 天压到 6 天。</b><br>
+      这一条有对象、有动作、有结果。<span class="small">其他的要么是职责描述，要么是"参与了"。</span>`);
+    later(()=>{
+      bubble('bot', `这句话后面每一次跟 HR 开口，都要用它。`);
+      options(['好','为什么只有这一条'], pick=>{
+        bubble('me', pick);
+        if(pick==='为什么只有这一条'){
+          later(()=>{
+            bubble('bot', `因为只有它同时满足三件事：<b>有数字、有对比、能追问。</b><br>
+              "负责 B 端产品规划"这种话，我追问不下去，HR 也追问不下去。`);
+            later(askWants, 600);
+          }, 420);
+        } else later(askWants, 420);
+      });
+    }, 700);
+  }, 900);
+}
+
+/* --- 第 3 步：你要什么 --- */
+function askWants(){
+  setStep(2);
+  bubble('bot', `现在说说你要什么。<br>三个数字：<b>城市、薪资底线、方向</b>。给了我才好砍。`);
+  panel('你的条件', `
+    <div class="psec">
+      <div class="h">还没填</div>
+      <div class="psub">条件越具体，砍掉的越多，<br>剩下的越值得聊。</div>
+    </div>
+  `);
+  later(()=>{
+    card(`
+      <div class="hd"><span class="ok">✓</span> 从你的简历里先填了一版</div>
+      <div class="rows">
+        <div class="r"><span class="k">城市</span><span class="v"><b>上海</b>（家在静安，单程 60 分钟内）</span></div>
+        <div class="r"><span class="k">薪资</span><span class="v"><b>18k</b> 起（低于这个不聊）</span></div>
+        <div class="r"><span class="k">方向</span><span class="v"><b>B 端产品</b>（SaaS / 内部系统）</span></div>
+      </div>
+    `);
+    bubble('bot', `先按简历填了一版。要改就说，不改我就按这个扫。`);
+    options(['扫吧','我要改'], pick=>{
+      bubble('me', pick);
+      if(pick==='我要改'){
+        bubble('bot',`行。哪个改？说"城市"、"薪资"或"方向"，后面跟上你的数。`);
+      } else scanJobs();
+    });
+  }, 800);
+}
+
+/* --- 第 4 步：扫岗位 --- */
+function scanJobs(){
+  setStep(3);
+  S.scanned = true;
+  bubble('bot', `扫完了。今天在招的 B 端产品，一共 47 个。`);
+  panel('扫描中', `
+    <div class="psec"><div class="h">正在扫</div><div class="psub">47 个岗位</div></div>
+  `);
+  later(()=>{
+    bubble('bot', `砍掉 38 个。理由写在右边。<span class="small">剩下的 9 个，按"最可能回你"排序。</span>`);
+    later(()=>{
+      panel('扫描完成', `
+        <div class="psec">
+          <div class="h">今天的结果</div>
+          <div class="pbig">9<small>个值得开口</small></div>
+          <div class="psub">扫了 47 个，砍掉 38 个。<br>砍的理由都在下面。</div>
+        </div>
+        <div class="psec">
+          <div class="h">砍得最多的三类</div>
+          <div class="plist" style="list-style:none">
+            <li style="border-bottom:1px dotted var(--line);padding:8px 0"><b>薪资低于 18k</b><span>14 个 · 聊到最后也会卡在这</span></li>
+            <li style="border-bottom:1px dotted var(--line);padding:8px 0"><b>通勤超 60 分钟</b><span>11 个 · 你自己设的线</span></li>
+            <li style="border-bottom:1px dotted var(--line);padding:8px 0"><b>招聘方 14 天没上线</b><span>9 个 · 发了也不会有人看</span></li>
+            <li style="padding:8px 0"><b>其他</b><span>4 个 · 方向不符或信息太少</span></li>
+          </div>
+        </div>
+      `);
+      options(['看看那 9 个'], ()=>{
+        bubble('me','看看那 9 个');
+        showList();
+      });
+    }, 700);
+  }, 900);
+}
+
+/* --- 第 5 步：清单 --- */
+function showList(){
+  setStep(4);
+  bubble('bot', `按"最可能回你"排，不是按薪资排。<br>第一名 86 分，第九名 52 分。<span class="small">分越高，越值得先开口。</span>`);
+  renderJobPanel(-1);
+  later(()=>{
+    options(jobs.slice(0,3).map(j=>`${j.rank} ${j.title}`), pick=>{
+      bubble('me', pick);
+      const idx = jobs.slice(0,3).findIndex(j=>pick.startsWith(j.rank));
+      if(idx>=0) chooseJob(idx);
+    });
+  }, 700);
+}
+
+function renderJobPanel(sel){
+  panel('判断清单', `
+    <div class="psec" style="margin-bottom:14px">
+      <div class="h">9 个值得开口 · 按回复概率</div>
+      ${jobs.map((j,i)=>`
+        <div class="pjob ${i===sel?'on':''}" data-i="${i}">
+          <div class="top">
+            <span class="rk">${j.rank}</span>
+            <span class="tt"><b>${j.title}</b><span>${j.co} · ${j.pay}</span></span>
+            <span class="sc">${j.score}</span>
+          </div>
+          <div class="hk"><i>钩子</i>${j.hook}</div>
+        </div>
+      `).join('')}
+    </div>
+  `);
+  $$('.pjob').forEach(el=>{
+    el.onclick = ()=>chooseJob(+el.dataset.i);
   });
 }
-renderJobs();
 
-$('#rejbtn').addEventListener('click',()=>$('#rej').classList.toggle('open'));
-
-/* ---------- step 6 handoff ---------- */
-let primed=false;
-function primeHandoff(){
-  if(primed) return; primed=true;
-  const txt=$('#ptxt');
-  txt.classList.remove('empty');
-  txt.textContent='';
-  const msg=jobs[0].msg;
-  let i=0;
-  const type=()=>{
-    txt.textContent = msg.slice(0,i)+'';
-    if(i<msg.length){
-      i+=3; setTimeout(type, 18);
-    }else{
-      txt.textContent = msg;
-      const caret=document.createElement('span'); caret.className='caret';
-      txt.appendChild(caret);
-      $('#sent').disabled=false;
-      $('#psend').classList.add('armed');
-    }
-  };
-  setTimeout(type, 240);
+function chooseJob(i){
+  S.pickedJob = i;
+  const j = jobs[i];
+  setStep(5);
+  renderJobPanel(i);
+  bubble('bot', `第 ${j.rank} 名，${j.co}。<br>右边写了为什么值得聊，和第一句话。`);
+  later(()=>{
+    showMsg(i);
+  }, 600);
 }
 
-$('#sent').addEventListener('click',()=>{
-  const msg=jobs[0].msg;
-  $('#pchat').insertAdjacentHTML('beforeend',
-    `<div class="bubble me">${msg.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div>`);
-  $('#pchat').scrollTop = 1e6;
-  $('#ptxt').classList.add('empty');
-  $('#ptxt').textContent='';
-  $('#psend').classList.remove('armed');
-  $('#sent').disabled=true;
-  setTimeout(()=>show(6), 640);
+function showMsg(i){
+  const j = jobs[i];
+  panel('写第一句', `
+    <div class="psec">
+      <div class="h">${j.title} · ${j.co}</div>
+      <div class="psub" style="margin-bottom:10px">${j.pay} · ${j.city}</div>
+      ${j.why.map(([t,k])=>`<div style="font-size:11px;line-height:1.8;color:${k==='ok'?'var(--ink2)':'var(--ink3)'};padding:2px 0">
+        <span style="color:${k==='ok'?'var(--green)':'#B0A794'};margin-right:5px">${k==='ok'?'✓':'!'}</span>${t}</div>`).join('')}
+    </div>
+    <div class="psec">
+      <div class="h">建议的第一句话 · ${j.msg.length} 字</div>
+      <div class="pmsg">${j.msg}<div class="ch">${j.msg.length} 字 · 一屏内看得完</div></div>
+    </div>
+    <div class="psec">
+      <div class="h">为什么这样写更容易被回</div>
+      <div class="pwhy">
+        ${j.whyReply.map((t,k)=>`<div class="w"><span class="wn">${k+1}</span><div>${t}</div></div>`).join('')}
+      </div>
+    </div>
+  `);
+  bubble('bot', `话在右边。想改就改，或者直接说"发给我"，我填进对话框。`);
+  options(['填进对话框','这句再短点'], pick=>{
+    bubble('me', pick);
+    if(pick==='填进对话框'){
+      $('#ta').value = j.msg;
+      $('#ta').focus();
+      autoGrow();
+      bubble('bot', `填好了，光标在末尾。<b>发送键在你手上。</b><span class="small">念一遍，不像你说的就删掉。</span>`);
+      setStep(6);
+      afterSendPrompt();
+    } else {
+      bubble('bot', `再短一点的话，砍掉中间那句解释，只留<b>数字 + 一个问题</b>。右边我改一版。`);
+    }
+  });
+}
+
+function afterSendPrompt(){
+  later(()=>{
+    bubble('bot', `发出去之后，我会盯着谁回了。<br>明天这个点，我提醒你回来看看。`);
+    panel('发出去了', `
+      <div class="psec">
+        <div class="h">开始之前</div>
+        <div class="psum">
+          <div><b>9</b><span>值得开口</span></div>
+          <div><b>1</b><span>你发了</span></div>
+          <div><b>0</b><span>我替你按</span></div>
+        </div>
+      </div>
+      <div class="psec">
+        <div class="h">接下来</div>
+        <ul class="plist">
+          <li><b>明天这个点提醒你</b><span>盯的是谁回了，不是你投了几个</span></li>
+          <li><b>剩下 8 个，一个一个来</b><span>每个岗位的话都不一样</span></li>
+          <li><b>被拒的会攒成复盘</b><span>同一类连拒三次，问题多半不在能力上</span></li>
+        </ul>
+      </div>
+      <div class="stamp">慢慢来<br>我陪着</div>
+    `);
+  }, 800);
+}
+
+/* ================= 输入框 ================= */
+const ta = $('#ta');
+function autoGrow(){ ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,90)+'px'; }
+ta.addEventListener('input', autoGrow);
+ta.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send(); }
+});
+$('#snd').onclick = send;
+
+const replies = {
+  resume: [/简历|pdf/i, ()=>{ S.resume=RESUME; later(askResume,300); }],
+  start:  [/开始|走吧|来|继续/i, ()=>{ if(!S.resume) later(askResume,300); }],
+  want:   [/上海|薪资|¥|k|方向|b端|产品/i, ()=>{ if(S.step<3) later(askWants,300); }],
+  more:   [/还有|剩下|其他|再来/i, ()=>bubble('bot','右边那 9 个都在。点开任意一个，钩子和话术都会出来。')],
+  why:    [/为什么|凭什么|怎么判断/i, ()=>bubble('bot','两条：他 JD 里有没有你的原话，他最近有没有在用人。<span class="small">两条都缺，发了大概率白工。</span>')],
+  sendq:  [/怎么发|发出去|按发送/i, ()=>bubble('bot','话我填好了，<b>发送键在你手上</b>。念一遍，不像你说的就改。')]
+};
+
+function send(){
+  const v = ta.value.trim();
+  if(!v) return;
+  const raw = v;
+  bubble('me', v.replace(/</g,'&lt;'));
+  ta.value=''; autoGrow();
+
+  for(const k in replies){
+    const [re,fn] = replies[k];
+    if(re.test(raw)){ fn(); return; }
+  }
+
+  if(S.step===0 && !S.resume){ S.resume = RESUME; later(askResume, 400); return; }
+  if(S.step>=6){ bubble('bot','嗯。有回复了告诉我，我陪你想怎么接。'); return; }
+
+  // 兜底：不装作听懂了
+  bubble('bot','这句我没完全接住。<span class="small">你可以说"开始"、"看清单"、"为什么是这个分"，或者直接点下面的按钮。</span>');
+}
+
+/* ================= 键盘 ================= */
+addEventListener('keydown', e=>{
+  if((e.metaKey||e.ctrlKey) && e.key==='ArrowRight'){
+    e.preventDefault();
+    const next = Math.min(S.step+1, 6);
+    if(next===1) askResume();
+    else if(next===2) askWants();
+    else if(next===3) scanJobs();
+    else if(next===4) showList();
+    else if(next===5) chooseJob(0);
+    else if(next===6){ $('#ta').value = jobs[0].msg; autoGrow(); afterSendPrompt(); }
+  }
 });
 
-$('#mockcopy').addEventListener('click',()=>{
-  navigator.clipboard?.writeText(jobs[0].msg).catch(()=>{});
-  toast('已复制到剪贴板');
-});
-
-/* ---------- init ---------- */
-show(0);
+boot();
 </script>
 </body>
 </html>
