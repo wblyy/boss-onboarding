@@ -40,14 +40,6 @@
       </button>
     </nav>
 
-    <div class="side-mini">
-      <div class="sm-h">今天</div>
-      <div class="sm-row"><span>翻到</span><b id="smFound">—</b></div>
-      <div class="sm-row"><span>写好</span><b id="smDone">0</b></div>
-      <div class="sm-row"><span>需要你</span><b id="smNeed">0</b></div>
-      <div class="sm-row"><span>我替你发</span><b class="red" id="smDraft">0</b></div>
-    </div>
-
     <div class="side-foot">
       <button class="sf-btn" id="speed" type="button">演示速度 <b id="speedVal">1×</b></button>
       <div class="sf-note">永久免费 · 不抽成</div>
@@ -97,19 +89,6 @@
             </div>
           </div>
 
-          <!-- 右侧今日小账 -->
-          <div class="stage-stats">
-            <div class="ss-h">今天这一轮</div>
-            <div class="ss-row"><span>翻到</span><b id="ssFound">—</b></div>
-            <div class="ss-row"><span>写好</span><b id="ssDone">0</b></div>
-            <div class="ss-row"><span>需要你</span><b id="ssNeed" class="amb">0</b></div>
-            <div class="ss-sep"></div>
-            <div class="ss-big">
-              <span>我替你按的发送</span>
-              <b id="ssMoney">0</b>
-            </div>
-            <div class="ss-foot" id="ssFoot">还没开始翻</div>
-          </div>
         </section>
 
         <!-- 大按钮 -->
@@ -120,16 +99,6 @@
           </button>
           <div class="cta-note" id="ctaNote">不会发任何消息，不会动你的求职账号。</div>
         </div>
-
-        <!-- 行动前：先让你看见会翻哪些 -->
-        <section class="preview" id="preview">
-          <div class="pv-h">
-            <h2>这 47 个岗，你可能一个都还没投</h2>
-            <span>点「读一遍简历」我才知道哪些对得上</span>
-          </div>
-          <div class="pv-grid" id="pvGrid"></div>
-          <p class="pv-note"><b>为什么要现在看</b>岗位挂出来越久，招到人的可能性越高；招聘方越久没上线，你的消息越可能沉底。这两件事平台都不会告诉你。</p>
-        </section>
 
         <!-- 滚动播报 -->
         <div class="ticker" id="ticker" hidden>
@@ -189,6 +158,29 @@
     </div>
 
   </main>
+
+  <!-- ===== 右侧常驻栏：今天这一轮的账 + 翻到了谁 ===== -->
+  <aside class="rail" id="rail">
+
+    <div class="rail-sec">
+      <div class="rl-h">今天这一轮<span id="ssFoot">还没开始翻</span></div>
+      <div class="rl-row"><span>翻到</span><b id="ssFound">47</b></div>
+      <div class="rl-row"><span>对上</span><b id="ssMatch">—</b></div>
+      <div class="rl-row"><span>写好</span><b id="ssDone">0</b></div>
+      <div class="rl-row"><span>需要你</span><b id="ssNeed" class="amb">0</b></div>
+      <div class="rl-send">
+        <span>我替你按的发送</span>
+        <b id="ssMoney">0</b>
+      </div>
+    </div>
+
+    <div class="rail-sec rail-grow">
+      <div class="rl-h">池子里有谁<span id="railTip">还没对过，先别当真</span></div>
+      <div class="pv-grid" id="pvGrid"></div>
+      <p class="rl-note"><b>为什么现在看</b>岗位挂出来越久，招到人的可能性越高；招聘方越久没上线，你的消息越可能沉底。这两件事平台都不会告诉你。</p>
+    </div>
+
+  </aside>
 </div>
 
 <!-- ===== 微信服务号模拟 ===== -->

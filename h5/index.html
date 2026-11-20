@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="theme-color" content="#F2F5FA" />
+  <title>回血 · 找工作</title>
+  <meta name="description" content="读一遍简历，把今天值得开口的岗挑出来，一个岗一句话。发送键在你手上。" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <!-- 顶栏 -->
+  <header class="top">
+    <div class="top-l">
+      <svg class="logo" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+        <path d="M13 22S3.6 16.6 3.6 10.4a4.9 4.9 0 0 1 9.4-1.6 4.9 4.9 0 0 1 9.4 1.6C22.4 16.6 13 22 13 22Z" fill="#1F6FF2"/>
+      </svg>
+      <div class="top-t"><b>回血</b><span>这一段，我陪你走</span></div>
+    </div>
+    <div class="top-r"><i></i>简历不出手机</div>
+  </header>
+
+  <main class="main" id="main">
+
+    <!-- 首屏：一句话 + 一个按钮 -->
+    <section class="hero" id="hero">
+      <div class="hero-ring">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="hr-track" cx="60" cy="60" r="52"/>
+          <circle class="hr-fill" id="hrFill" cx="60" cy="60" r="52"
+            stroke-dasharray="326.73" stroke-dashoffset="326.73"/>
+        </svg>
+        <div class="hr-in">
+          <b id="hNum">?</b>
+          <span id="hUnit">个岗值得开口</span>
+        </div>
+      </div>
+      <p class="kicker" id="kicker">只在你同意的情况下动手</p>
+      <h1 id="h1">读一遍简历<br>把该开口的岗挑出来</h1>
+      <p class="sub" id="sub">哪些值得聊、为什么值得聊、第一句话怎么写。发送键不归我。</p>
+      <div class="chips">
+        <span><i></i>只读简历</span>
+        <span><i></i>一个岗一句</span>
+        <span><i></i>不替你发</span>
+      </div>
+    </section>
+
+    <!-- 这一轮的小账 -->
+    <section class="tally" id="tally" hidden>
+      <div class="tl"><span>翻到</span><b id="tFound">—</b></div>
+      <div class="tl"><span>对上</span><b id="tMatch">—</b></div>
+      <div class="tl"><span>写好</span><b id="tDone">0</b></div>
+      <div class="tl"><span>需要你</span><b id="tNeed" class="amb">0</b></div>
+      <div class="tl tl-send"><span>我替你按的发送</span><b id="tSend">0</b></div>
+    </section>
+
+    <!-- 需要你 -->
+    <section class="handoff" id="handoff" hidden>
+      <div class="ho-h"><b>要你回一句 <i id="hoCount">0</i></b><span>点开直接回</span></div>
+      <div class="ho-list" id="hoList"></div>
+    </section>
+
+    <!-- 正在写 -->
+    <div class="ticker" id="ticker" hidden>
+      <i></i><span id="tkText">正在准备</span>
+    </div>
+
+    <!-- 清单 -->
+    <section class="list" id="list" hidden>
+      <div class="lh">
+        <h2>扫了 47 个，对上 <b id="lhN">6</b> 个</h2>
+        <span>按匹配度排，不按薪资排</span>
+      </div>
+      <div class="rows" id="rows"></div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="fine">
+      <p>简历只在这台手机上解析，不上传、不存档。</p>
+      <p>不替你发送，不批量投递，不保存任何登录态。</p>
+      <p>岗位分数来自公开信息与你的简历，是判断顺序，不是录用概率。</p>
+    </footer>
+
+    <div class="spacer"></div>
+  </main>
+
+  <!-- 底部固定按钮 -->
+  <div class="bar" id="bar">
+    <button class="big" id="bigBtn" type="button">
+      <span class="bg-main" id="bgMain">读一遍简历</span>
+      <span class="bg-sub" id="bgSub">约 5 秒 · 先看今天有哪些岗</span>
+    </button>
+    <div class="bar-note" id="barNote">不会发任何消息，不会动你的求职账号</div>
+  </div>
+</div>
+
+<!-- 微信式底部弹层：要你回的那件 -->
+<div class="sheet" id="sheet" hidden>
+  <div class="sh-mask" data-sh-close></div>
+  <div class="sh-body">
+    <div class="sh-grab"></div>
+    <div class="sh-src"><b>回血</b><span>服务通知 · 刚刚</span></div>
+    <div class="sh-msg" id="shMsg">
+      <p class="sh-t" id="shT">需要你回一句</p>
+      <p id="shN">…</p>
+    </div>
+    <div class="sh-opts" id="shOpts"></div>
+    <button class="sh-x" data-sh-close type="button">稍后再说</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="tasks.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

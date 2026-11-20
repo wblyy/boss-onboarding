@@ -66,7 +66,6 @@ function startScan() {
   $('#rows').innerHTML = '';
   $('#hoList').innerHTML = '';
   $('#ticker').hidden = true;
-  $('#preview').hidden = true;
 
   $('#dUnit').textContent = '正在读';
   $('#dNum').className = 'd-num sm';
@@ -122,20 +121,30 @@ function finishScan() {
   $('#h1sub').textContent = '扫了 47 个在招的岗位，砍掉 38 个。每个留下的都列了三条：硬条件够不够、经历对不对得上、对方最近有没有在用人。';
   $('#ctaNote').textContent = '分数是判断顺序，不是录用概率。点开每个岗能看到分怎么来的。';
 
-  renderPreviewAll();
+  renderPreviewAll(true);
+  const tip = $('#railTip');
+  if (tip) tip.textContent = `对上 ${state.found.filter(o => o.group !== 'skip').length} 个`;
   renderRows();
-  $('#preview').hidden = false;
   $('#listsec').hidden = false;
   syncMini();
 
   setTimeout(startRun, 800);
 }
 
-function renderPreviewAll() {
+/* 还没翻之前：只列出池子里有谁，不给分——分是翻完之后才有的东西 */
+function renderPreviewAll(scanned = false) {
   const grid = $('#pvGrid');
   if (!grid) return;
   grid.innerHTML = SWEEP.filter(s => s[2]).map(([n, t, id]) => {
     const o = foundOf(id);
+    if (!scanned) {
+      const label = o ? o.name.split(' · ')[0] : '简历';
+      return `<div class="pv" data-pv="${id}">
+        <div class="pv-n">${label}</div>
+        <div class="pv-t">${o ? o.src.split(' · ')[0] : 'PDF'}</div>
+        <div class="pv-num on">待对</div>
+      </div>`;
+    }
     const skip = o && o.group === 'skip';
     return `<div class="pv ${skip ? 'pv-exp' : ''}" data-pv="${id}">
       <div class="pv-n">${o ? o.name.split(' · ')[0] : '简历'}</div>
@@ -305,19 +314,41 @@ function finishRun() {
 const MATCH_LABEL = { close: '对得上', maybe: '差一点', skip: '不建议投' };
 const matchLabel = o => MATCH_LABEL[o.group] || '';
 
+const verdictCls = v =>
+  v === '直接命中' || v === '对上' || v === '好' ? 'ok'
+    : v === '缺口' || v === '未覆盖' || v === '无效' || v === '劝退' ? 'no'
+      : 'warn';
+
 function matchBlock(o) {
   const m = o.match;
   if (!m) return '';
   const row = ([k, verdict, note]) => {
-    const cls = verdict === '直接命中' || verdict === '对上' || verdict === '好' ? 'ok'
-      : verdict === '缺口' || verdict === '未覆盖' || verdict === '无效' || verdict === '劝退' ? 'no'
-      : 'warn';
+    const cls = verdictCls(verdict);
     return `<div class="mr"><span class="mr-k">${k}</span><span class="mr-v ${cls}">${verdict}</span><span class="mr-n">${note}</span></div>`;
   };
   return `<div class="match">
     <div class="match-sec"><span class="match-t">硬条件</span>${m.hardRows.map(row).join('')}</div>
     <div class="match-sec"><span class="match-t">经历对得上</span>${m.midRows.map(row).join('')}</div>
     <div class="match-sec"><span class="match-t">信号</span>${m.sigRows.map(row).join('')}</div>
+  </div>`;
+}
+
+// 折叠时那一行：几条对上、几条存疑、几条缺口
+function matchSummary(o) {
+  const m = o.match;
+  if (!m) return '';
+  const all = [...m.hardRows, ...m.midRows, ...m.sigRows];
+  const n = { ok: 0, warn: 0, no: 0 };
+  all.forEach(r => n[verdictCls(r[1])]++);
+  const dots = all.map(r => `<i class="${verdictCls(r[1])}"></i>`).join('');
+  const tally = [];
+  if (n.ok) tally.push(`${n.ok} 条对上`);
+  if (n.warn) tally.push(`${n.warn} 条存疑`);
+  if (n.no) tally.push(`${n.no} 条缺口`);
+  return `<div class="row-sum">
+    <span class="rs-dots">${dots}</span>
+    <span>${tally.join(' · ')}</span>
+    <span class="rs-more">看依据</span>
   </div>`;
 }
 
@@ -334,6 +365,7 @@ function renderRows() {
         </div>
         <div class="row-why">${o.why}</div>
         <div class="row-log" data-log></div>
+        ${matchSummary(o)}
         ${matchBlock(o)}
         <div class="row-msg">${o.msg ? o.msg + `<span class="rm-ch">${o.hook}</span>` : '<i>这个岗不写话术。理由在匹配结果里。</i>'}</div>
       </div>
@@ -343,6 +375,15 @@ function renderRows() {
         <span class="row-st" data-st>排队</span>
       </div>
     </div>`).join('');
+
+  // 点一下就展开/收起；正在跑或在等你的那条不收起，免得看不到进度
+  $$('[data-row]').forEach(el => {
+    el.onclick = e => {
+      if (e.target.closest('[data-ho-btn]')) return;
+      el.classList.toggle('open');
+    };
+  });
+
   const usable = state.found.filter(o => o.group !== 'skip');
   $('#lhTitle').innerHTML = `扫了 <b>47</b> 个，对得上 <b>${usable.length}</b> 个`;
   $('#lhMeta').textContent = `按匹配度排，不按薪资排`;
@@ -361,7 +402,10 @@ function paintRows() {
       case 'done': cls = 'done'; st = `写好了 · ${hhmm(t.arrivedAt)}`; break;
       case 'skip': cls = 'skip'; st = '这次不写'; break;
     }
-    el.className = 'row ' + cls + (t.phase === 'wait' ? ' pinned' : '');
+    el.classList.remove('queue', 'run', 'waits', 'settle', 'done', 'skip', 'pinned', 'flash');
+    el.classList.add(cls);
+    // 卡住等你回的那条自动摊开：你看得出它卡在哪一条上
+    if (t.phase === 'wait') el.classList.add('pinned', 'open');
     const stEl = el.querySelector('[data-st]');
     if (stEl) stEl.textContent = st;
     const lg = el.querySelector('[data-log]');
@@ -431,12 +475,7 @@ function syncMini() {
   const found = state.found.filter(o => o.group !== 'skip').length;
 
   const set = (sel, v) => { const e = $(sel); if (e) e.textContent = v; };
-  set('#smFound', found || '—');
-  set('#smDone', done);
-  set('#smNeed', wait);
-  set('#smDraft', 0);            // 永远是 0——这是产品承诺
-
-  set('#ssFound', found || '—');
+  set('#ssMatch', found || '—');
   set('#ssDone', done);
   set('#ssNeed', wait);
   set('#stTotal', found ? found + ' 个' : '—');
