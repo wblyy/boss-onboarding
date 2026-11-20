@@ -959,14 +959,18 @@
   .turn.me{flex-direction:row-reverse}
   .turn.me .ava{background:transparent;border:1px solid var(--line);color:var(--ink3);font-weight:500}
   .say{
+    flex:0 1 auto;min-width:0;
     max-width:min(54ch,84%);padding:11px 15px;font-size:13px;line-height:2;
     border-radius:2px;letter-spacing:.015em;
+    overflow-wrap:break-word;word-break:normal;
   }
   .turn.bot .say{background:var(--card);border:1px solid var(--line2);color:var(--ink2)}
   .turn.me .say{background:#F0E9DA;border:1px solid var(--line);color:var(--ink)}
   .say b{color:var(--ink);font-weight:600}
   .say .kw{border-bottom:1.5px solid #E8CDC3}
   .say .small{font-size:11.5px;color:var(--ink3);display:block;margin-top:6px}
+  /* 气泡：按内容撑开，但始终占住一行宽度，避免塌成竖排 */
+  .say{flex:1 1 auto;width:auto}
 
   /* 对话里的选项 */
   .opts{display:flex;flex-wrap:wrap;gap:7px;margin:2px 0 18px 34px}
@@ -1102,6 +1106,113 @@
   }
   .stamp:after{content:"";position:absolute;inset:4px;border:1px solid var(--brick);opacity:.45}
 
+
+  /* ============ 落地页：一屏一个按钮 ============ */
+  .landing{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:0 40px;position:relative;text-align:center;
+  }
+  .ld-inner{max-width:520px;display:flex;flex-direction:column;align-items:center}
+  .ld-eyebrow{
+    font-family:var(--sans);font-size:10px;letter-spacing:.26em;color:var(--brick);
+    margin-bottom:26px;
+  }
+  .ld-h1{
+    font-family:var(--serif);font-size:38px;line-height:1.5;font-weight:600;
+    letter-spacing:.06em;margin:0 0 20px;color:var(--ink);
+  }
+  .ld-sub{
+    font-family:var(--serif);font-size:13.5px;line-height:2.05;color:var(--ink3);
+    letter-spacing:.03em;margin-bottom:34px;
+  }
+
+  /* 唯一的大按钮 */
+  .ld-btn{
+    display:flex;flex-direction:column;align-items:center;gap:5px;
+    min-width:248px;padding:16px 40px;cursor:pointer;
+    background:var(--brick);color:#FBF7EF;border:0;border-radius:2px;
+    font-family:var(--serif);
+    box-shadow:0 2px 0 #8E2C1E, 0 8px 20px -8px rgba(140,44,30,.5);
+    transition:transform .14s ease, box-shadow .14s ease, background .14s;
+  }
+  .ld-btn:hover{background:#A33325;transform:translateY(-1px);
+    box-shadow:0 3px 0 #8E2C1E, 0 10px 24px -8px rgba(140,44,30,.55)}
+  .ld-btn:active{transform:translateY(1px);box-shadow:0 1px 0 #8E2C1E}
+  .ld-btn-t{font-size:17px;letter-spacing:.22em;font-weight:600;text-indent:.22em}
+  .ld-btn-s{font-family:var(--sans);font-size:9.5px;letter-spacing:.14em;opacity:.72}
+
+  .ld-note{
+    margin-top:30px;padding-top:18px;border-top:1px solid var(--line);
+    font-size:10.5px;line-height:1.9;color:#A69C89;letter-spacing:.05em;
+  }
+  .ld-note .ld-items{display:block;color:var(--ink3);margin-top:2px}
+
+  .ld-foot{
+    position:absolute;left:0;right:0;bottom:16px;
+    font-family:var(--sans);font-size:9px;letter-spacing:.14em;color:#BEB5A2;
+  }
+  .ld-foot .sep{margin:0 7px;opacity:.5}
+
+  .shell.is-hidden{display:none}
+  .landing.is-hidden{display:none}
+
+  /* 扫描态 */
+  .scan{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 40px}
+  .scan-ring{
+    width:88px;height:88px;border-radius:50%;border:1.5px solid var(--line);
+    border-top-color:var(--brick);animation:spin 1s linear infinite;margin-bottom:26px;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .scan-t{font-family:var(--serif);font-size:15px;letter-spacing:.1em;margin-bottom:8px}
+  .scan-step{font-family:var(--sans);font-size:10.5px;letter-spacing:.1em;color:var(--ink3);height:16px}
+  .scan-bar{width:280px;height:2px;background:var(--line2);margin-top:24px;overflow:hidden}
+  .scan-bar i{display:block;height:100%;width:0;background:var(--brick);transition:width .3s ease}
+
+
+  /* 扫描：逐行点亮 */
+  .scan-hd{display:flex;align-items:baseline;gap:4px;margin-bottom:18px}
+  .scan-n{font-family:var(--serif);font-size:40px;font-weight:600;line-height:1;color:var(--brick)}
+  .scan-of{font-family:var(--mono);font-size:12px;color:#B0A794}
+  .scan-t{font-family:var(--serif);font-size:15px;letter-spacing:.14em;margin-bottom:22px;color:var(--ink2)}
+  .scan-list{list-style:none;width:340px;text-align:left;margin:0 0 6px}
+  .scan-row{
+    display:flex;gap:9px;align-items:baseline;padding:6px 0;
+    font-size:12px;line-height:1.7;color:#A69C89;
+    opacity:0;transform:translateY(-3px);transition:.3s ease;
+  }
+  .scan-row.show{opacity:1;transform:none}
+  .scan-row.on{color:var(--ink2)}
+  .scan-row .tick{
+    font-family:var(--mono);font-size:10px;color:#C2B9A6;width:12px;flex:none;
+  }
+  .scan-row.on .tick{color:var(--brick)}
+  .scan-bar{width:340px;height:2px;background:var(--line2);margin-top:18px;overflow:hidden}
+  .scan-bar i{display:block;height:100%;width:0;background:var(--brick);transition:width .4s ease}
+  .scan-foot{font-family:var(--sans);font-size:9.5px;letter-spacing:.12em;color:#BEB5A2;margin-top:16px}
+
+
+  .undo{
+    width:100%;margin-top:9px;padding:7px 12px;
+    font-family:var(--serif);font-size:11.5px;letter-spacing:.06em;
+    background:transparent;border:1px solid var(--brick-line);color:var(--brick);
+    cursor:pointer;transition:.16s;
+  }
+  .undo:hover{background:var(--brick-soft)}
+
+
+  /* 岗位卡可下钻 */
+  .pjob .why-toggle{
+    padding:0 10px 8px 27px;font-size:9.5px;letter-spacing:.06em;color:#B0A794;
+    cursor:pointer;
+  }
+  .pjob .why-toggle:hover{color:var(--brick)}
+  .pjob .why-body{display:none;padding:2px 10px 9px 27px;border-top:1px dotted var(--line);margin-top:2px}
+  .pjob .why-body.open{display:block}
+  .pjob .wr{display:flex;gap:6px;font-size:10.5px;line-height:1.7;color:var(--ink3);padding:1px 0}
+  .pjob .wr .ok{color:var(--green);flex:none}
+  .pjob .wr .warn{color:var(--amber);flex:none}
+  .pjob .wr-src{font-size:9px;color:#BEB5A2;margin-top:6px;line-height:1.6;letter-spacing:.02em}
+
   @media (max-width:1100px){
     .panel{width:300px}
     .rail{width:168px}
@@ -1121,7 +1232,31 @@
     </span>
   </div>
 
-  <div class="shell">
+  <!-- ========== 落地：一屏一个按钮 ========== -->
+  <div class="landing" id="landing">
+    <div class="ld-inner">
+      <div class="ld-eyebrow">找工作 · 第一次用</div>
+      <h1 class="ld-h1">先看一眼<br>你的简历<br>能换来几个回复</h1>
+      <p class="ld-sub">三十秒。不上传简历，不登录任何账号。<br>只读你给的那一份。</p>
+
+      <button class="ld-btn" id="ldStart">
+        <span class="ld-btn-t">开始检查</span>
+        <span class="ld-btn-s">大约 30 秒</span>
+      </button>
+
+      <div class="ld-note">
+        <span>检查完你会拿到</span>
+        <span class="ld-items">今天值得开口的岗位 ／ 每个岗位的第一句话</span>
+      </div>
+    </div>
+    <div class="ld-foot">
+      <span>v1.1.1</span>
+      <span class="sep">·</span>
+      <span>不代替你发送，不批量投递</span>
+    </div>
+  </div>
+
+  <div class="shell is-hidden">
 
     <!-- ========== 左：导航 ========== -->
     <aside class="rail">
@@ -1293,6 +1428,70 @@ const jobs=[
    src:'企查查 · 2026-11-18'}
 ];
 
+
+/* ================= 落地 → 扫描 → 对话 ================= */
+const landing = $('#landing');
+const shell   = $('.shell');
+
+$('#ldStart').onclick = runCheck;
+
+/* 扫描：每一步都显示真实在做什么，不做假进度 */
+const SCAN_STEPS = [
+  '读简历 · 陈默_B端产品_2026.pdf',
+  '找出带数字的成果',
+  '扫今天在招的岗位 · 47 个',
+  '对上你的条件，砍掉 38 个',
+  '写第一句话 · 9 个岗位'
+];
+
+function runCheck(){
+  landing.innerHTML = `
+    <div class="scan">
+      <div class="scan-hd">
+        <span class="scan-n" id="scanN">0</span>
+        <span class="scan-of">/ 5</span>
+      </div>
+      <div class="scan-t">正在检查</div>
+      <ul class="scan-list" id="scanList"></ul>
+      <div class="scan-bar"><i id="scanBar"></i></div>
+      <div class="scan-foot">不上传简历 · 不登录任何账号</div>
+    </div>`;
+
+  const bar = $('#scanBar'), list = $('#scanList'), num = $('#scanN');
+  let i = 0;
+
+  const addRow = (text, done)=>{
+    const li = document.createElement('li');
+    li.className = 'scan-row' + (done ? ' on' : '');
+    li.innerHTML = `<span class="tick">${done?'✓':'·'}</span><span>${text}</span>`;
+    list.appendChild(li);
+    requestAnimationFrame(()=>li.classList.add('show'));
+  };
+
+  addRow(SCAN_STEPS[0], false);
+
+  const tick = setInterval(()=>{
+    // 当前行打勾
+    const cur = list.lastElementChild;
+    if(cur){ cur.classList.add('on'); cur.querySelector('.tick').textContent = '✓'; }
+    i++;
+    num.textContent = i;
+    bar.style.width = (i/SCAN_STEPS.length*100) + '%';
+    if(i < SCAN_STEPS.length){
+      addRow(SCAN_STEPS[i], false);
+    } else {
+      clearInterval(tick);
+      setTimeout(finishCheck, 520);
+    }
+  }, 680);
+}
+
+function finishCheck(){
+  landing.classList.add('is-hidden');
+  shell.classList.remove('is-hidden');
+  boot(true);
+}
+
 /* ================= 状态 ================= */
 const S = {
   step: 0,          // 0..6
@@ -1374,37 +1573,69 @@ const RESUME = {
 };
 
 /* --- 第 1 步：开场 --- */
-function boot(){
+function boot(fromCheck){
   setStep(0);
-  panel('等待开始', `
-    <div class="psec">
-      <div class="h">这个判断台做什么</div>
-      <div class="psub">它读岗位，标出哪些值得聊，<br>再写给每一个的第一句话。</div>
-    </div>
-    <div class="psec">
-      <div class="h">它不做什么</div>
-      <div class="plist" style="list-style:none">
-        <li style="border-bottom:1px dotted var(--line);padding:7px 0"><b>不替你发</b><span>发送键留给你</span></li>
-        <li style="border-bottom:1px dotted var(--line);padding:7px 0"><b>不批量投</b><span>一个岗位一句话</span></li>
-        <li style="padding:7px 0"><b>不动你账号</b><span>不登录、不保存登录态</span></li>
+  S.resume = RESUME;      // 体检已经读过简历
+
+  if(fromCheck){
+    /* ---- 体检结果：先说结论，再给下一步。不报"风险数"，不制造焦虑 ---- */
+    setStep(1);
+    bubble('bot', `读完了。<span class="small">陈默_B端产品_2026.pdf · 128 KB · 在你机器上读的，没上传</span>`);
+
+    card(`
+      <div class="hd"><span class="ok">✓</span> 读到的 <span style="margin-left:auto;font-family:var(--mono);font-size:9px">4 段经历</span></div>
+      <div class="rows">
+        ${RESUME.rows.map(([k,v])=>`<div class="r"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('')}
       </div>
-    </div>
-    <div class="pempty">在左边打个「开始」，<br>或者直接说你在找什么岗位。</div>
-  `);
+    `);
+
+    later(()=>{
+      bubble('bot', `四段里只有一条能直接用：<br>
+        <b>你把销售和交付的线下流程拆成 31 个节点，14 天压到 6 天。</b><br>
+        有对象、有动作、有结果。`);
+      later(()=>{
+        bubble('bot', `另外两条是职责描述，改一下就能用。<span class="small">"负责 B 端产品规划"这种，我追问不下去，HR 也追问不下去。</span>`);
+        later(()=>{
+          bubble('bot', `简历的问题先记着，不影响往下走。<br><b>今天在招的 47 个岗位，我看完了。</b>`);
+          panel('检查完成', `
+            <div class="psec">
+              <div class="h">今天的结果</div>
+              <div class="pbig">9<small>个值得开口</small></div>
+              <div class="psub">47 个在招的岗位里挑出来的。<br>每个都写了为什么，可以点开看。</div>
+            </div>
+            <div class="psec">
+              <div class="h">另外 38 个为什么没选</div>
+              <div class="plist" style="list-style:none">
+                <li style="border-bottom:1px dotted var(--line);padding:8px 0"><b>薪资低于 18k</b><span>14 个 · 聊到最后也会卡在这</span></li>
+                <li style="border-bottom:1px dotted var(--line);padding:8px 0"><b>通勤超 60 分钟</b><span>11 个 · 你自己设的线</span></li>
+                <li style="border-bottom:1px dotted var(--line);padding:8px 0"><b>招聘方 14 天没上线</b><span>9 个 · 发了也不会有人看</span></li>
+                <li style="padding:8px 0"><b>方向不符或信息太少</b><span>4 个</span></li>
+              </div>
+            </div>
+            <div class="psec">
+              <div class="h">下一步</div>
+              <div class="psub">看第 1 个。话我已经写好了，<br>你觉得像你说的话，就拿去发。</div>
+            </div>
+          `);
+          later(()=>{
+            options(['看看那 9 个'], pick=>{
+              bubble('me', pick);
+              showList();
+            });
+          }, 520);
+        }, 800);
+      }, 860);
+    }, 680);
+    return;
+  }
+
+  /* ---- 直接进来（没有走体检）：保留原来的开场 ---- */
   bubble('bot',
     `我是回血。这一段我陪你走。<br><br>
-     找工作这件事，我能帮你的不是"多投"，是<span class="kw">少投错</span>。<br>
-     你把简历给我，我把今天值得开口的岗位挑出来，一条一条告诉你第一句话怎么写。`);
+     找工作这件事，我能帮你的不是"多投"，是<span class="kw">少投错</span>。`);
   later(()=>{
-    bubble('bot', `开始之前先说清楚一件事：<b>发送键我不碰。</b><span class="small">我写，你发。发出去的东西得是你认的。</span>`);
-    options(['开始','我先说说我在找什么'], pick=>{
-      bubble('me', pick);
-      if(pick==='开始') later(askResume, 360);
-      else {
-        bubble('bot','行，你说。想找什么方向、什么城市、什么价位，讲多讲少都行。');
-      }
-    });
-  }, 520);
+    options(['开始'], ()=>{ bubble('me','开始'); later(askResume,360); });
+  }, 420);
 }
 
 /* --- 第 2 步：放简历 --- */
@@ -1511,14 +1742,31 @@ function scanJobs(){
 /* --- 第 5 步：清单 --- */
 function showList(){
   setStep(4);
-  bubble('bot', `按"最可能回你"排，不是按薪资排。<br>第一名 86 分，第九名 52 分。<span class="small">分越高，越值得先开口。</span>`);
-  renderJobPanel(-1);
+  bubble('bot', `按「最可能回你」排，不按薪资排。<br>第一名 86 分，第九名 52 分。`);
+  renderJobPanel(0);
   later(()=>{
-    options(jobs.slice(0,3).map(j=>`${j.rank} ${j.title}`), pick=>{
-      bubble('me', pick);
-      const idx = jobs.slice(0,3).findIndex(j=>pick.startsWith(j.rank));
-      if(idx>=0) chooseJob(idx);
-    });
+    const j = jobs[0];
+    bubble('bot', `第 1 个：<b>${j.title} · ${j.co}</b>　${j.pay}<br>${j.hook}。`);
+    later(()=>{
+      card(`
+        <div class="hd"><span class="ok">✓</span> 第一句话 · ${j.msg.length} 字</div>
+        <div class="rows"><div class="r" style="padding:4px 0"><span class="v" style="line-height:2">${j.msg}</span></div></div>
+      `);
+      setStep(5);
+      later(()=>{
+        options(['填进对话框','换一个岗位'], pick=>{
+          bubble('me', pick);
+          if(pick==='填进对话框'){
+            $('#ta').value = j.msg; $('#ta').focus(); autoGrow();
+            setStep(6);
+            bubble('bot', `填好了，光标在末尾。<b>发送键在你手上。</b><span class="small">念一遍，不像你说的就删掉。</span>`);
+            afterSendPrompt();
+          } else {
+            bubble('bot', `右边挑。点岗位卡，或者点「这个分怎么来的」看依据。`);
+          }
+        });
+      }, 560);
+    }, 900);
   }, 700);
 }
 
@@ -1534,12 +1782,29 @@ function renderJobPanel(sel){
             <span class="sc">${j.score}</span>
           </div>
           <div class="hk"><i>钩子</i>${j.hook}</div>
+          <!-- 可下钻：分数由哪几条构成，全部摊开 -->
+          <div class="why-toggle" data-why="${i}">这个分怎么来的 ›</div>
+          <div class="why-body" id="why-${i}">
+            ${j.why.map(([t,k])=>`<div class="wr"><span class="${k==='ok'?'ok':'warn'}">${k==='ok'?'✓':'!'}</span>${t}</div>`).join('')}
+            <div class="wr-src">${j.src}</div>
+          </div>
         </div>
       `).join('')}
     </div>
   `);
   $$('.pjob').forEach(el=>{
-    el.onclick = ()=>chooseJob(+el.dataset.i);
+    el.onclick = e=>{
+      if(e.target.closest('.why-toggle')) return;
+      chooseJob(+el.dataset.i);
+    };
+  });
+  $$('.why-toggle').forEach(el=>{
+    el.onclick = e=>{
+      e.stopPropagation();
+      const body = $('#why-'+el.dataset.why);
+      const open = body.classList.toggle('open');
+      el.textContent = open ? '收起 ‹' : '这个分怎么来的 ›';
+    };
   });
 }
 
@@ -1548,10 +1813,28 @@ function chooseJob(i){
   const j = jobs[i];
   setStep(5);
   renderJobPanel(i);
-  bubble('bot', `第 ${j.rank} 名，${j.co}。<br>右边写了为什么值得聊，和第一句话。`);
+  bubble('bot', `<b>${j.title} · ${j.co}</b>　${j.pay}<br>${j.hook}。`);
   later(()=>{
     showMsg(i);
-  }, 600);
+    card(`
+      <div class="hd"><span class="ok">✓</span> 给这个岗的第一句话 · ${j.msg.length} 字</div>
+      <div class="rows"><div class="r" style="padding:4px 0"><span class="v" style="line-height:2">${j.msg}</span></div></div>
+    `);
+    later(()=>{
+      bubble('bot', `这句只对这一个岗有用。<span class="small">同一段复制给别的岗，等于没写。</span>`);
+      options(['填进对话框','这句再短点'], pick=>{
+        bubble('me', pick);
+        if(pick==='填进对话框'){
+          $('#ta').value = j.msg; $('#ta').focus(); autoGrow();
+          setStep(6);
+          bubble('bot', `填好了，光标在末尾。<b>发送键在你手上。</b><span class="small">念一遍，不像你说的就删掉。</span>`);
+          afterSendPrompt();
+        } else {
+          bubble('bot', `再短就砍掉中间那句解释，只留<b>数字 + 一个问题</b>。`);
+        }
+      });
+    }, 620);
+  }, 540);
 }
 
 function showMsg(i){
@@ -1574,20 +1857,6 @@ function showMsg(i){
       </div>
     </div>
   `);
-  bubble('bot', `话在右边。想改就改，或者直接说"发给我"，我填进对话框。`);
-  options(['填进对话框','这句再短点'], pick=>{
-    bubble('me', pick);
-    if(pick==='填进对话框'){
-      $('#ta').value = j.msg;
-      $('#ta').focus();
-      autoGrow();
-      bubble('bot', `填好了，光标在末尾。<b>发送键在你手上。</b><span class="small">念一遍，不像你说的就删掉。</span>`);
-      setStep(6);
-      afterSendPrompt();
-    } else {
-      bubble('bot', `再短一点的话，砍掉中间那句解释，只留<b>数字 + 一个问题</b>。右边我改一版。`);
-    }
-  });
 }
 
 function afterSendPrompt(){
@@ -1610,9 +1879,55 @@ function afterSendPrompt(){
           <li><b>被拒的会攒成复盘</b><span>同一类连拒三次，问题多半不在能力上</span></li>
         </ul>
       </div>
+      <div class="psec">
+        <div class="h">万一发错了</div>
+        <div class="psub">这句话随时在这个位置。<br>点一下就能拿回原文，重新改。</div>
+        <button class="undo" id="undoBtn">← 撤回这句，重新写</button>
+      </div>
       <div class="stamp">慢慢来<br>我陪着</div>
     `);
+    $('#undoBtn').onclick = undo;
   }, 800);
+}
+
+/* 撤销：把话术从输入框拿回，退回选岗位那一步 */
+function undo(){
+  const j = jobs[S.pickedJob ?? 0];
+  $('#ta').value = '';
+  autoGrow();
+  setStep(5);
+  bubble('bot', `撤回了。<br>这句话还在右边，改完再填一次。`);
+  chooseJobPanelOnly(S.pickedJob ?? 0);
+}
+
+function chooseJobPanelOnly(i){
+  const j = jobs[i];
+  renderJobPanel(i);
+  panel('写第一句', `
+    <div class="psec">
+      <div class="h">${j.title} · ${j.co}</div>
+      <div class="psub" style="margin-bottom:10px">${j.pay} · ${j.city}</div>
+      ${j.why.map(([t,k])=>`<div style="font-size:11px;line-height:1.8;color:${k==='ok'?'var(--ink2)':'var(--ink3)'};padding:2px 0">
+        <span style="color:${k==='ok'?'var(--green)':'#B0A794'};margin-right:5px">${k==='ok'?'✓':'!'}</span>${t}</div>`).join('')}
+    </div>
+    <div class="psec">
+      <div class="h">建议的第一句话 · ${j.msg.length} 字</div>
+      <div class="pmsg">${j.msg}<div class="ch">${j.msg.length} 字 · 一屏内看得完</div></div>
+      <button class="undo" id="refillBtn" style="margin-top:10px">重新填进对话框 →</button>
+    </div>
+    <div class="psec">
+      <div class="h">为什么这样写更容易被回</div>
+      <div class="pwhy">
+        ${j.whyReply.map((t,k)=>`<div class="w"><span class="wn">${k+1}</span><div>${t}</div></div>`).join('')}
+      </div>
+    </div>
+  `);
+  $('#refillBtn').onclick = ()=>{
+    $('#ta').value = j.msg; $('#ta').focus(); autoGrow();
+    setStep(6);
+    bubble('bot', `又填回去了。<b>发送键还在你手上。</b>`);
+    afterSendPrompt();
+  };
 }
 
 /* ================= 输入框 ================= */
