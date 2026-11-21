@@ -339,6 +339,8 @@ h1,h2,h3{font-weight:600}
   grid-template-columns:1fr auto;gap:8px 14px;align-items:center}
 .ho:last-child{border-bottom:0}
 .ho.answered{background:var(--green-soft)}
+.ho-s{font-family:var(--mono);font-size:9px;letter-spacing:.07em;color:var(--amber);
+  margin-bottom:2px;opacity:.9}
 .ho-t{font-size:13px;color:var(--ink);font-weight:500}
 .ho-n{font-size:11.5px;color:var(--ink-3);margin-top:1px}
 .ho-n b{color:var(--ink-2)}
@@ -405,6 +407,8 @@ h1,h2,h3{font-weight:600}
   background:var(--blue);color:#fff;font-size:13px;font-weight:600}
 .wx-bub{background:#fff;border-radius:5px;padding:9px 11px;font-size:13.5px;line-height:1.7;
   color:#1F1F1F;position:relative;max-width:272px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.wx-bub .wx-s{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;
+  color:#57708F;margin-bottom:2px}
 .wx-bub .wx-t{display:block;font-size:10px;color:#A0A0A0;margin-bottom:4px}
 .wx-msg.me{flex-direction:row-reverse}
 .wx-msg.me .wx-avatar{background:#7FB8F5}
@@ -522,3 +526,54 @@ h1,h2,h3{font-weight:600}
 
 /* 承诺数字：0 次发送 */
 .rl-send b#ssMoney{color:var(--green)}
+
+/* ===== 执行记录：每一步都留痕 ===== */
+.feed{margin-top:24px;background:var(--card);border-radius:14px;box-shadow:var(--sh);overflow:hidden}
+.fd-h{display:flex;align-items:center;gap:8px;padding:11px 16px;border-bottom:1px solid var(--line)}
+.fd-h i{width:6px;height:6px;border-radius:50%;background:var(--blue);flex:none;
+  animation:pulse 1.1s ease-in-out infinite}
+.fd-h b{font-size:11.5px;font-weight:600;color:var(--ink-2);letter-spacing:.04em}
+.fd-h span{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--ink-4)}
+.fd-body{max-height:210px;overflow-y:auto;padding:7px 0}
+.fd{display:flex;gap:10px;align-items:baseline;padding:5px 16px;font-size:11.5px;line-height:1.6;
+  animation:fdIn .2s ease-out}
+@keyframes fdIn{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
+.fd-at{font-family:var(--mono);font-size:9.5px;color:#B6C2D2;flex:none;width:34px}
+.fd-t{color:var(--ink-2);flex:none;max-width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fd-m{color:var(--ink-4);font-size:10.5px;margin-left:auto;text-align:right;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fd-keep .fd-t{color:var(--ink)}
+.fd-drop .fd-t,.fd-drop .fd-m{color:#AEBACB}
+.fd-done .fd-t{color:var(--green)}
+.fd-skip .fd-t{color:var(--ink-4)}
+.fd-pick .fd-t{color:var(--amber)}
+.fd-sum .fd-t,.fd-end .fd-t{font-weight:600;color:var(--ink)}
+
+/* ===== 结果分层 ===== */
+.wrapup{margin-top:26px;background:var(--card);border-radius:14px;box-shadow:var(--sh);
+  padding:16px 18px 6px;animation:fdIn .3s ease-out}
+.wu-h{font-size:11px;letter-spacing:.08em;color:var(--ink-4);margin-bottom:10px}
+.wu-list{list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 26px}
+.wu-list li{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line)}
+.wu-i{width:18px;height:18px;border-radius:50%;background:var(--card-2);color:var(--ink-4);
+  font-family:var(--mono);font-size:10px;display:grid;place-items:center;flex:none;margin-top:1px}
+.wu-list b{display:block;font-size:13px;font-weight:500;color:var(--ink-2);line-height:1.4}
+.wu-list b em{font-style:normal;font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink)}
+.wu-list span{display:block;font-size:11px;color:var(--ink-4);line-height:1.55;margin-top:2px}
+.wu-top{margin-top:14px;padding-top:12px;border-top:1px dashed #DCE4EE}
+.wu-top-h{font-size:11.5px;font-weight:600;color:var(--blue);letter-spacing:.04em;margin-bottom:9px}
+.wu-top-l{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding-bottom:12px}
+.wu-c{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border-radius:10px;
+  background:var(--blue-soft);cursor:pointer;transition:background .15s}
+.wu-c:hover{background:#DCE9FC}
+.wu-n{width:17px;height:17px;border-radius:50%;background:var(--blue);color:#fff;font-size:10px;
+  display:grid;place-items:center;flex:none;margin-top:2px;font-family:var(--mono)}
+.wu-c-t{flex:1;min-width:0}
+.wu-c-t b{display:block;font-size:12.5px;color:var(--ink);line-height:1.4}
+.wu-c-t span{display:block;font-size:10.5px;color:var(--ink-3);margin-top:1px}
+.wu-c-t p{font-size:11px;color:var(--ink-3);line-height:1.6;margin-top:4px}
+.wu-v{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--blue);flex:none}
+
+@media (max-width:900px){
+  .wu-list,.wu-top-l{grid-template-columns:1fr}
+}

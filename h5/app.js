@@ -31,7 +31,8 @@ const state = {
   copied: null,
   channel: null,      // null | 'page' | 'pub' —— 要你拍板的事落在哪一侧
   qrShown: false,
-  pubLog: []          // 公众号那一侧的对话
+  pubLog: [],         // 公众号那一侧的对话
+  feed: []            // 执行记录：每一步做了什么，都留痕
 };
 
 /* ---------- 环 ---------- */
@@ -42,6 +43,37 @@ function setRing(pct) {
   el.style.strokeDashoffset = (LEN * (1 - Math.max(0, Math.min(1, pct)))).toFixed(2);
 }
 
+/* ---------- 执行顺序：按漏斗排，不按分数排 ----------
+   先让它自己写完两个，证明在干活；再按 1 判断 → 2 方向 → 3 缺口 逐个问你；
+   依赖前面答案的岗（carryFrom）排在那个答案之后。 */
+function executionOrder(found) {
+  const plain = found.filter(o => !o.stage && !o.carryFrom);
+  const asks = found.filter(o => o.stage && !o.carryFrom).sort((a, b) => a.order - b.order);
+  const carried = found.filter(o => o.carryFrom);
+  return [...plain, ...asks, ...carried];
+}
+
+/* ---------- 执行记录 ----------
+   每一步都往 feed 里塞一行：读了谁、为什么留下、为什么不要、写完了哪句。
+   页面上滚着看，跑完以后再分成三层。 */
+function feedPush(kind, text, meta) {
+  state.feed.push({ kind, text, meta: meta || '', at: hhmm(new Date()) });
+  renderFeed();
+}
+function renderFeed() {
+  const box = $('#fdBody');
+  if (!box) return;
+  box.innerHTML = state.feed.map(f =>
+    `<div class="fd fd-${f.kind}">
+       <span class="fd-at">${f.at}</span>
+       <span class="fd-t">${f.text}</span>
+       ${f.meta ? `<span class="fd-m">${f.meta}</span>` : ''}
+     </div>`).join('');
+  const c = $('#fdCount');
+  if (c) c.textContent = `${state.feed.length} 步`;
+  box.scrollTop = box.scrollHeight;
+}
+
 /* ---------- 扫描 ---------- */
 function startScan() {
   state.phase = 'scanning';
@@ -49,13 +81,17 @@ function startScan() {
   state.tasks = [];
   state.wxPending = null;
   state.drafted = 0;
+  state.feed = [];
 
   $('#list').hidden = true;
   $('#handoff').hidden = true;
-  $('#ticker').hidden = true;
+  $('#feed').hidden = false;
+  $('#wrapup').hidden = true;
   $('#rows').innerHTML = '';
   $('#hoList').innerHTML = '';
   $('#tally').hidden = false;
+  renderFeed();
+  feedPush('resume', '读到简历，4 段经历', '教育科技 2 年 · 每段都有可核对的细节');
 
   $('#hUnit').textContent = '正在读';
   $('#hNum').textContent = `0/${SWEEP.length}`;
@@ -75,6 +111,16 @@ function startScan() {
     $('#hNum').textContent = `${i + 1}/${SWEEP.length}`;
     const o = foundOf(id);
     $('#sub').textContent = o ? `正在看：${o.name}` : '正在读简历，4 段经历';
+    if (o) {
+      const kept = o.group !== 'skip';
+      feedPush(
+        kept ? 'keep' : 'drop',
+        `${o.name.split(' · ')[0]} · ${o.name.split(' · ')[1] || ''}`,
+        kept
+          ? `${MATCH_LABEL[o.group]} · 对 ${o.v}${o.gate !== 'auto' ? ' · 要你定' : ''}`
+          : `${MATCH_LABEL[o.group]} · 对 ${o.v} · 不占你的时间`
+      );
+    }
     state.scanN = i + 1;
     syncQrRing(pct);
     // 翻到一半左右再拦人：先让它证明自己在干活，再谈关注
@@ -97,6 +143,8 @@ function finishScan() {
   $('#sub').textContent = '扫了 47 个在招的，砍掉 38 个。每个留下的都列三条：硬条件、经历、对方最近有没有在用人。';
   $('#barNote').textContent = '分数是判断顺序，不是录用概率';
 
+  feedPush('sum', `扫了 47 个，留下 ${usable.length} 个`, `砍掉 ${47 - usable.length} 个 · 3 个要你定`);
+
   renderRows();
   $('#list').hidden = false;
   syncTally();
@@ -105,10 +153,11 @@ function finishScan() {
   if (!$('#qrSheet').hidden) {
     state.scanN = SWEEP.length;
     syncQrRing(1);
+    const n = state.found.filter(o => o.gate !== 'auto').length;
     const sub = $('#qrSub');
-    if (sub) sub.textContent = `读完了：${usable.length} 个岗对得上，下面开始逐个写。其中 ${state.found.filter(o => o.gate !== 'auto').length} 件要你拍板——关注之后在公众号里回。`;
+    if (sub) sub.textContent = `${usable.length} 个岗对得上，${n} 处要你拍板。页面关掉以后，这些只在公众号里找得到你。`;
     const t = $('#qrTxt');
-    if (t) t.textContent = '写完了要你定的事，我发到公众号';
+    if (t) t.textContent = '对上了，接下来三件事要你定';
   }
 
   setTimeout(startRun, 620);
@@ -117,12 +166,11 @@ function finishScan() {
 /* ---------- 执行 ---------- */
 function startRun() {
   state.phase = 'running';
-  state.tasks = state.found.map(o => ({
+  state.tasks = executionOrder(state.found).map(o => ({
     o, phase: 'queue', p: 0, log: '', resumeAt: 0, doneAt: null,
     settled: false, answered: false, said: null, handed: false, skip: false
   }));
 
-  $('#ticker').hidden = false;
   $('#h1').innerHTML = '一个岗一个岗对，<br>对上了再写第一句。';
   $('#sub').textContent = '硬条件、经历、对方动向，三条都摊开给你看。需要你确认的会跳到最上面。';
   $('#kicker').textContent = '正在写';
@@ -134,7 +182,10 @@ function startRun() {
 
     if (busy < LANES) {
       const next = state.tasks.find(t => t.phase === 'queue');
-      if (next) { next.phase = 'run'; next.resumeAt = performance.now(); }
+      if (next) {
+        next.phase = 'run'; next.resumeAt = performance.now();
+        feedPush('run', `写 ${next.o.name.split(' · ')[0]}`, next.o.how);
+      }
     }
 
     const now = performance.now();
@@ -153,7 +204,10 @@ function startRun() {
           setTimeout(() => {
             if (t.phase !== 'settle') return;
             t.phase = 'done';
-            if (!t.skip) state.drafted++;
+            if (!t.skip) {
+              state.drafted++;
+              feedPush('done', `写好 ${t.o.name.split(' · ')[0]}`, `第 1 句 · ${(t.o.msg || '').length} 字`);
+            }
             paintRows(); syncTally();
             if (state.tasks.every(x => x.phase === 'done' || x.phase === 'skip')) finishRun();
           }, 700 / state.speed);
@@ -165,7 +219,7 @@ function startRun() {
       if (t.phase === 'settle') done += 0;
     });
 
-    paintRows(); sortRows(); syncTally(); renderTicker();
+    paintRows(); sortRows(); syncTally();
     if (done === state.tasks.length) { finishRun(); return; }
     setTimeout(tick, 110);
   };
@@ -192,9 +246,10 @@ function syncQrRing(pct) {
   if (ring) ring.style.setProperty('--p', (p * 100).toFixed(1));
   const num = $('#qrNum');
   if (num) num.textContent = `${state.scanN || 0}/${SWEEP.length}`;
+  // 扫描时不再堆三行说明：一句话说清代价，剩下的交给二维码
   const sub = $('#qrSub');
   if (sub && state.phase === 'scanning') {
-    sub.textContent = `${state.scanN || 0} 处翻过了，还在读。翻完以后有几件事只有你能定——选语气、补一个数字、要不要试一个够不到的岗。`;
+    sub.textContent = '新岗、要你拍板的事，只在公众号里叫你。页面一关，这轮就断了。';
   }
 }
 
@@ -214,7 +269,7 @@ function qrFollow() {
     pubPush({
       from: 'agent',
       title: state.phase === 'running' ? '简历读完了，正在逐个对' : '简历读完了，岗位在翻',
-      need: '翻完以后有几件事只有你能定：选语气、补一个只有你知道的数字、要不要试一个够不到的岗。都在这儿说。'
+      need: '整轮我只问你三个决定，按求职的顺序来：这个岗值不值得投、同一段经历往哪一面讲、缺口当面怎么认。问到第几个，我会标出来。'
     });
   }
   const pend = state.tasks.find(t => t.phase === 'wait');
@@ -241,7 +296,7 @@ function openHandoff(t) {
   if (state.channel === 'pub') {
     pubPush({
       from: 'agent', taskId: t.o.id,
-      title: t.o.hand.title, need: t.o.hand.need, opts: t.o.hand.opts
+      step: t.o.hand.step, title: t.o.hand.title, need: t.o.hand.need, opts: t.o.hand.opts
     });
     if ($('#pub').hidden) {
       syncPubBadge();
@@ -259,8 +314,13 @@ function answer(t, opt, via) {
   t.answered = true;
   t.said = opt.label;
 
+  // 你选的是同一个岗的哪种讲法——选中哪个，成稿就换成哪个
+  if (opt.msg) { t.o.msg = opt.msg; paintRowMsg(t.o.id); }
+  syncCarried(t, opt);
+
   if (opt.value === 'skip') {
     t.skip = true; t.phase = 'skip';
+    feedPush('skip', `放下 ${t.o.name.split(' · ')[0]}`, `你选的：${opt.label}`);
     if (via === 'pub') pubPush({ from: 'me', text: opt.label }, true);
     renderHandoff(); paintRows(); syncTally(); renderPub();
     toast('好，这件不办了');
@@ -268,6 +328,7 @@ function answer(t, opt, via) {
     const rest = state.tasks.filter(x => x.phase !== 'done' && x.phase !== 'skip');
     if (!rest.length) finishRun();
   } else {
+    feedPush('pick', `你定了：${opt.label}`, `${t.o.hand.step} · ${t.o.name.split(' · ')[0]}`);
     t.phase = 'run';
     t.resumeAt = performance.now() - (RUN_MS / state.speed) * 0.6;
     if (via === 'pub') pubPush({ from: 'me', text: opt.label }, true);
@@ -286,6 +347,32 @@ function answer(t, opt, via) {
   else closeSheet();
 }
 
+// 「缺口怎么认」只问一次：选了哪种接法，后面同类缺口照这个写
+function syncCarried(t, opt) {
+  if (opt.value !== 'go') return;
+  const idx = t.o.hand.opts.indexOf(opt);
+  if (idx < 0) return;
+  state.tasks.filter(x => x.o.carryFrom === t.o.id).forEach(x => {
+    if (!Array.isArray(x.o.msgByOpt) || !x.o.msgByOpt[idx]) return;
+    x.o.msg = x.o.msgByOpt[idx];
+    if (opt.carry) x.o.hook = opt.carry;
+    paintRowMsg(x.o.id);
+  });
+}
+
+function paintRowMsg(id) {
+  const o = foundOf(id);
+  if (!o) return;
+  const t = state.tasks.find(x => x.o.id === id);
+  const mbox = document.querySelector(`[data-row="${id}"] .row-msg`);
+  if (!mbox) return;
+  mbox.dataset.key = '';              // 让下一帧 paintRows 重画
+  mbox.innerHTML = msgHTML(o);
+  const cb = mbox.querySelector('[data-copy]');
+  if (cb) cb.onclick = e => { e.stopPropagation(); copyMsg(cb.dataset.copy, cb); };
+  if (t) mbox.dataset.key = `${o.msg ? o.msg.length + '|' + o.msg.slice(0, 10) + '|' + o.hook : ''}|${t.phase === 'wait'}`;
+}
+
 function renderHandoff() {
   const list = state.tasks.filter(t => t.handed && t.phase !== 'done');
   const el = $('#handoff');
@@ -297,6 +384,7 @@ function renderHandoff() {
     const skipped = t.skip;
     return `<div class="ho ${answered ? 'answered' : ''}">
       <div class="ho-txt">
+        ${t.o.hand.step ? `<div class="ho-s">${t.o.hand.step}</div>` : ''}
         <div class="ho-t">${t.o.hand.title}</div>
         <div class="ho-n">${t.o.hand.need}${t.said ? ` · <b>你回了「${t.said}」</b>` : ''}</div>
       </div>
@@ -321,6 +409,8 @@ function renderHandoff() {
 function showSheet(t) {
   state.sheetFor = t;
   const h = t.o.hand;
+  $('#shStep').textContent = h.step || '';
+  $('#shStep').hidden = !h.step;
   $('#shT').textContent = h.title;
   $('#shN').textContent = h.need;
   $('#shOpts').innerHTML = h.opts.map((o, i) =>
@@ -365,6 +455,7 @@ function renderPub() {
       return `<div class="pub-msg ${me ? 'me' : ''}">
         <div class="pub-av ${me ? 'me' : ''}">${me ? '我' : '回'}</div>
         <div class="pub-bub">
+          ${m.step ? `<div class="pb-s">${m.step}</div>` : ''}
           ${m.title ? `<div class="pb-t">${m.title}</div>` : ''}
           ${m.need ? `<div class="pb-n">${m.need}</div>` : ''}
           ${m.text && !m.opts ? m.text : ''}
@@ -388,7 +479,7 @@ function openPubFor(t) {
   const has = state.pubLog.some(m => m.taskId === t.o.id);
   if (!has) pubPush({
     from: 'agent', taskId: t.o.id,
-    title: t.o.hand.title, need: t.o.hand.need, opts: t.o.hand.opts
+    step: t.o.hand.step, title: t.o.hand.title, need: t.o.hand.need, opts: t.o.hand.opts
   });
   pubPush({ from: 'sys', text: `还差你一句 · ${t.o.name.split(' · ')[1] || t.o.name}` });
 }
@@ -415,13 +506,58 @@ function syncPubBadge() {
   if (hint) hint.textContent = state.channel === 'pub' ? '都在公众号里' : '点开直接回';
 }
 
+/* ---------- 结果分层 ----------
+   跑完给三件事：扫了多少、哪些进了候选、先投哪几个。
+   「先投」只看三条——对得上、还没招到、你手里有能直接说的事。 */
+function renderWrapup() {
+  const written = state.tasks.filter(t => t.phase === 'done');
+  const skipped = state.tasks.filter(t => t.skip);
+  const answered = state.tasks.filter(t => t.answered).length;
+  const scanned = 47;                     // 这一轮扫的在招总数
+  const dropped = scanned - state.tasks.length;   // 扫描阶段就砍掉的
+
+  $('#wrapup').hidden = false;
+
+  $('#wuList').innerHTML = [
+    ['扫过', `${scanned} 个在招的`, '按 JD 原文 + 你的简历逐条对'],
+    ['过初筛', `${state.tasks.length} 个`, `差太多、位置不对的 ${dropped} 个没进`],
+    ['写好了', `${written.length} 句`, skipped.length ? `${skipped.length} 个你放下了，一句没写` : '每个过筛的都写了句，一条没漏'],
+    ['要你定', `${answered} 处`, `每条判断都留了依据 · 发送键仍是 0`],
+  ].map(([k, v, n], i) => `<li>
+      <span class="wu-i">${i + 1}</span>
+      <div><b>${k} · <em>${v}</em></b><span>${n}</span></div>
+    </li>`).join('');
+
+  // 先投的三个：匹配分高、岗位还热、句子不是通用的
+  const top = written.slice()
+    .sort((a, b) => b.o.v - a.o.v)
+    .slice(0, 3);
+  $('#wuTop').innerHTML = top.map((t, i) => `
+    <div class="wu-c" data-wu="${t.o.id}">
+      <span class="wu-n">${i + 1}</span>
+      <div class="wu-c-t">
+        <b>${t.o.name}</b>
+        <span>${t.o.src}</span>
+        <p>${t.o.how}</p>
+      </div>
+      <span class="wu-v">${t.o.v}</span>
+    </div>`).join('');
+  $$('[data-wu]').forEach(el => {
+    el.onclick = () => {
+      const row = document.querySelector(`[data-row="${el.dataset.wu}"]`);
+      if (!row) return;
+      row.classList.add('open');
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+  });
+}
+
 function finishRun() {
   if (state.phase === 'done') return;
   state.phase = 'done';
   const doneN = state.tasks.filter(t => t.phase === 'done').length;
   const skipped = state.tasks.filter(t => t.skip).length;
 
-  $('#ticker').hidden = true;
   setRing(1);
   $('.hero-ring').classList.add('done');
   $('#hNum').textContent = String(doneN);
@@ -431,7 +567,8 @@ function finishRun() {
   $('#sub').textContent = `每个岗都列了三条匹配依据${skipped ? `，${skipped} 个你跳过了` : ''}。发送键我一次都没碰。`;
   setBtn(false, '再看一遍', '明天这个点我会再看一眼谁还在招');
   $('#barNote').textContent = '这一轮话已写好，你挑一个复制走';
-  paintRows(); syncTally(); renderHandoff();
+  feedPush('end', '这一轮跑完', `${doneN} 句写好了 · 发送键 0 次`);
+  paintRows(); syncTally(); renderHandoff(); renderWrapup();
   toast(`${doneN} 句话写好了`);
 
   if (state.channel === 'pub') {
@@ -482,8 +619,17 @@ function matchSummary(o) {
 }
 
 /* ---------- 渲染 ---------- */
+// 成稿区域单独一块：等你拍板的岗先写「在等你定」，定了再换成实际的句子
+function msgHTML(o) {
+  if (o.msg) return `<span data-msg>${o.msg}</span><span class="rm-ch" data-hook>${o.hook}</span>
+    <button class="rm-copy" type="button" data-copy="${o.id}">复制这句</button>`;
+  const t = state.tasks.find(x => x.o.id === o.id);
+  if (t && t.phase === 'wait') return '<i data-pending>在等你定，定了我接着写完这句。</i>';
+  return '<i>这个岗不写话术。理由在匹配结果里。</i>';
+}
+
 function renderRows() {
-  $('#rows').innerHTML = state.found.map(o => `
+  $('#rows').innerHTML = state.found.slice().sort((a, b) => b.v - a.v).map(o => `
     <div class="row queue" data-row="${o.id}">
       <div class="row-head">
         <span class="row-stick"></span>
@@ -505,10 +651,7 @@ function renderRows() {
       ${matchSummary(o)}
       <div class="row-body">
         ${matchBlock(o)}
-        <div class="row-msg">${o.msg
-          ? `${o.msg}<span class="rm-ch">${o.hook}</span>
-             <button class="rm-copy" type="button" data-copy="${o.id}">复制这句</button>`
-          : '<i>这个岗不写话术。理由在匹配结果里。</i>'}</div>
+        <div class="row-msg">${msgHTML(o)}</div>
       </div>
     </div>`).join('');
 
@@ -544,6 +687,18 @@ function paintRows() {
     if (t.phase === 'wait') el.classList.add('pinned', 'open');
     const s = el.querySelector('[data-st]');
     if (s) s.textContent = st;
+    // 成稿区跟着状态走：等着的、刚定下来的，都是同一块。
+    // 用 key 比对，别每 110ms 就重写一次——会把「已复制」和点开的展开态冲掉。
+    const mbox = el.querySelector('.row-msg');
+    if (mbox) {
+      const key = `${t.o.msg ? t.o.msg.length + '|' + t.o.msg.slice(0, 10) + '|' + t.o.hook : ''}|${t.phase === 'wait'}`;
+      if (mbox.dataset.key !== key) {
+        mbox.dataset.key = key;
+        mbox.innerHTML = msgHTML(t.o);
+        const cb = mbox.querySelector('[data-copy]');
+        if (cb) cb.onclick = e => { e.stopPropagation(); copyMsg(cb.dataset.copy, cb); };
+      }
+    }
     const g = el.querySelector('[data-log]');
     if (g) g.textContent = t.phase === 'run' ? t.log
       : t.phase === 'wait' ? '停在第 3 步 · 回一句就继续'
@@ -554,7 +709,8 @@ function paintRows() {
 const RANK = { wait: 0, run: 1, settle: 2, queue: 3, done: 4, skip: 5 };
 function sortRows() {
   const box = $('#rows');
-  const want = state.tasks.slice().sort((a, b) => RANK[a.phase] - RANK[b.phase]);
+  // 卡住的排最上面；同一档里按匹配度排，和列表顶上那句「按匹配度排」对得上
+  const want = state.tasks.slice().sort((a, b) => RANK[a.phase] - RANK[b.phase] || b.o.v - a.o.v);
   const cur = [...box.children];
   let same = true;
   for (let i = 0; i < want.length; i++) {
@@ -567,16 +723,6 @@ function sortRows() {
   });
 }
 
-function renderTicker() {
-  const run = state.tasks.find(t => t.phase === 'run');
-  const wait = state.tasks.find(t => t.phase === 'wait');
-  const doneN = state.tasks.filter(t => t.phase === 'done').length;
-  $('#tkText').textContent = wait
-    ? `${wait.o.name.split(' · ')[0]} 在等你一句话`
-    : run
-      ? `${run.o.name.split(' · ')[0]} · ${Math.min(5, Math.floor(run.p * 5) + 1)}/5 · ${run.log}`
-      : `已写好 ${doneN} 句`;
-}
 
 function syncTally() {
   const done = state.tasks.filter(t => t.phase === 'done').length;

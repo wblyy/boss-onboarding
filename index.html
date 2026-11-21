@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>回血 · 找工作</title>
   <meta name="description" content="一个跑在你电脑上的助手：读一遍简历，把今天值得开口的岗位挑出来，一个岗一句话。" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231F6FF2'/%3E%3Cpath d='M16 25S7 20 7 14a4.4 4.4 0 0 1 9-1 4.4 4.4 0 0 1 9 1c0 6-9 11-9 11Z' fill='%23fff'/%3E%3C/svg%3E" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -100,19 +101,29 @@
           <div class="cta-note" id="ctaNote">不会发任何消息，不会动你的求职账号。</div>
         </div>
 
-        <!-- 滚动播报 -->
-        <div class="ticker" id="ticker" hidden>
-          <span class="tk-live"><i></i>正在写</span>
-          <div class="tk-view"><div class="tk-track" id="tkTrack"></div></div>
-        </div>
-
         <!-- 需要你 -->
         <section class="handoff" id="handoff" hidden>
           <div class="ho-h">
             <b>需要你接手 <i id="hoCount">0</i></b>
-            <span>这几件只有你本人能做，剩下的我都在写</span>
+            <span>整轮只有三个决定，按求职的顺序问</span>
           </div>
           <div class="ho-list" id="hoList"></div>
+        </section>
+
+        <!-- 执行的滚动记录 -->
+        <section class="feed" id="feed" hidden>
+          <div class="fd-h"><i></i><b>在做什么</b><span id="fdCount">0 步</span></div>
+          <div class="fd-body" id="fdBody"></div>
+        </section>
+
+        <!-- 结果分层 -->
+        <section class="wrapup" id="wrapup" hidden>
+          <div class="wu-h">这一轮的分层</div>
+          <ol class="wu-list" id="wuList"></ol>
+          <div class="wu-top">
+            <div class="wu-top-h">建议先投这三个</div>
+            <div class="wu-top-l" id="wuTop"></div>
+          </div>
         </section>
 
         <!-- 清单 -->
@@ -129,7 +140,7 @@
           <p><b>注 1</b> 简历只在你本机解析，不上传、不存档、不出这台电脑。</p>
           <p><b>注 2</b> 不替你发送，不批量投递，不保存任何登录态。</p>
           <p><b>注 3</b> 岗位分数来自公开信息与你的简历，是判断顺序，不是录用概率。</p>
-          <p><b>注 4</b> 需要你确认的（选语气、补事实）会推到微信服务号，你回一句就行。用完即删。</p>
+          <p><b>注 4</b> 整轮只问你三个决定：这个岗值不值得投、同一段经历往哪一面讲、缺口当面怎么认。推到微信服务号，你点一下就回。用完即删。</p>
         </footer>
       </div>
     </div>

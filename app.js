@@ -43,8 +43,29 @@ const state = {
   wxPending: null,
   wxLog: [],
   drafted: 0,
-  skippedCount: 0
+  skippedCount: 0,
+  feed: []            // 执行记录：每一步做了什么，都留痕
 };
+
+/* ---------- 执行记录 ---------- */
+function feedPush(kind, text, meta) {
+  state.feed.push({ kind, text, meta: meta || '', at: hhmm(new Date()) });
+  renderFeed();
+}
+function renderFeed() {
+  const box = $('#fdBody');
+  if (!box) return;
+  box.innerHTML = state.feed.map(f =>
+    `<div class="fd fd-${f.kind}">
+       <span class="fd-at">${f.at}</span>
+       <span class="fd-t">${f.text}</span>
+       ${f.meta ? `<span class="fd-m">${f.meta}</span>` : ''}
+     </div>`).join('');
+  const c = $('#fdCount');
+  if (c) c.textContent = `${state.feed.length} 步`;
+  box.scrollTop = box.scrollHeight;
+}
+
 
 /* ---------- 环形进度 ---------- */
 const R = 104, LEN = 2 * Math.PI * R;
@@ -60,12 +81,16 @@ function startScan() {
   state.found = []; state.tasks = []; state.scanIdx = 0;
   state.wxPending = null; state.wxLog = [];
   state.drafted = 0; state.skippedCount = 0;
+  state.feed = [];
 
   $('#listsec').hidden = true;
   $('#handoff').hidden = true;
+  $('#wrapup').hidden = true;
+  $('#feed').hidden = false;
   $('#rows').innerHTML = '';
   $('#hoList').innerHTML = '';
-  $('#ticker').hidden = true;
+  renderFeed();
+  feedPush('resume', '读到简历，4 段经历', '教育科技 2 年 · 每段都有可核对的细节');
 
   $('#dUnit').textContent = '正在读';
   $('#dNum').className = 'd-num sm';
@@ -90,6 +115,17 @@ function startScan() {
     $('#ctaNote').textContent = `${i + 1} / ${SWEEP.length} 处已翻完`;
     // 每扫到一跳，先在预览格里点亮
     if (SWEEP[i][2]) markPreview(SWEEP[i][2], 'scanning');
+    const o = SWEEP[i][2] ? foundOf(SWEEP[i][2]) : null;
+    if (o) {
+      const kept = o.group !== 'skip';
+      feedPush(
+        kept ? 'keep' : 'drop',
+        `${o.name.split(' · ')[0]} · ${o.name.split(' · ')[1] || ''}`,
+        kept
+          ? `${MATCH_LABEL[o.group]} · 对 ${o.v}${o.gate !== 'auto' ? ' · 要你定' : ''}`
+          : `${MATCH_LABEL[o.group]} · 对 ${o.v} · 不占你的时间`
+      );
+    }
     if (i + 1 < SWEEP.length) { i++; setTimeout(step, STEP_MS); }
     else setTimeout(finishScan, 520);
   };
@@ -120,6 +156,8 @@ function finishScan() {
   $('#h1').innerHTML = `${usable.length} 个岗对得上，<br>其中 ${closeN} 个很合适。`;
   $('#h1sub').textContent = '扫了 47 个在招的岗位，砍掉 38 个。每个留下的都列了三条：硬条件够不够、经历对不对得上、对方最近有没有在用人。';
   $('#ctaNote').textContent = '分数是判断顺序，不是录用概率。点开每个岗能看到分怎么来的。';
+
+  feedPush('sum', `扫了 47 个，留下 ${usable.length} 个`, `砍掉 ${47 - usable.length} 个 · 3 个要你定`);
 
   renderPreviewAll(true);
   const tip = $('#railTip');
@@ -155,15 +193,23 @@ function renderPreviewAll(scanned = false) {
 }
 
 /* ---------- 执行 ---------- */
+/* 执行顺序：先让它自己写完几个，再按 1 判断 → 2 方向 → 3 缺口 逐个问；
+   依赖前面答案的岗（carryFrom）排在那个答案之后 */
+function executionOrder(found) {
+  const plain = found.filter(o => !o.stage && !o.carryFrom);
+  const asks = found.filter(o => o.stage && !o.carryFrom).sort((a, b) => a.order - b.order);
+  const carried = found.filter(o => o.carryFrom);
+  return [...plain, ...asks, ...carried];
+}
+
 function startRun() {
   state.phase = 'running';
-  state.tasks = state.found.map(o => ({
+  state.tasks = executionOrder(state.found).map(o => ({
     o, phase: 'queue', p: 0, log: '', startAt: 0, resumeAt: 0,
     doneAt: null, settleAt: 0, arrivedAt: null, answered: false,
     said: null, handed: false, skip: false
   }));
 
-  $('#ticker').hidden = false;
   $('#stPhase').textContent = '正在写';
   $('#stPhase').className = 'sl-st live';
   $('#h1').innerHTML = '一个岗一个岗对，<br>对上了再写第一句。';
@@ -179,7 +225,12 @@ function startRun() {
     if (busy < LANES) {
       for (const t of state.tasks) {
         if (busy >= LANES) break;
-        if (t.phase === 'queue') { t.phase = 'run'; t.resumeAt = now; busy++; }
+        if (t.phase !== 'queue') continue;
+        // 要你拍板的岗一件一件问，别两件同时卡在微信里
+        const isAsk = t.o.gate !== 'auto' && !t.answered;
+        if (isAsk && state.tasks.some(x => x.phase === 'wait')) continue;
+        t.phase = 'run'; t.resumeAt = now; busy++;
+        feedPush('run', `写 ${t.o.name.split(' · ')[0]}`, t.o.how);
       }
     }
 
@@ -217,7 +268,6 @@ function startRun() {
 
     paintRows();
     sortRows();
-    renderTicker();
     syncMini();
     syncDial(done);
     if (done === state.tasks.length) { finishRun(); return; }
@@ -233,11 +283,33 @@ function updateLog(t) {
   t.log = `${idx + 1}/5 ${name} · ${subs[sub]}`;
 }
 
+/* 「缺口怎么认」只问一次：选了哪种接法，后面同类缺口照这个写 */
+function syncCarried(t, opt) {
+  if (opt.value !== 'go') return;
+  const idx = t.o.hand.opts.indexOf(opt);
+  if (idx < 0) return;
+  state.tasks.filter(x => x.o.carryFrom === t.o.id).forEach(x => {
+    if (!Array.isArray(x.o.msgByOpt) || !x.o.msgByOpt[idx]) return;
+    x.o.msg = x.o.msgByOpt[idx];
+    if (opt.carry) x.o.hook = opt.carry;
+    paintRowMsg(x.o.id);
+  });
+}
+
+function paintRowMsg(id) {
+  const o = foundOf(id);
+  if (!o) return;
+  const mbox = document.querySelector(`[data-row="${id}"] .row-msg`);
+  if (!mbox) return;
+  mbox.dataset.key = '';
+  mbox.innerHTML = msgHTML(o);
+}
+
 function openHandoff(t) {
   if (t.handed) return;
   t.handed = true;
   const h = t.o.hand;
-  pushWx({ from: 'agent', title: '需要你回一句', text: h.title });
+  pushWx({ from: 'agent', step: h.step, title: '需要你回一句', text: h.title });
   t.wxMsgAt = hhmmss(new Date());
   renderHandoff();
   toast(`有一件要你确认 · ${h.title}`);
@@ -249,22 +321,28 @@ function answer(t, opt) {
   t.said = opt.label;
   pushWx({ from: 'me', text: opt.label });
 
+  // 你选的是哪种讲法，成稿就换成哪一版
+  if (opt.msg) { t.o.msg = opt.msg; paintRowMsg(t.o.id); }
+  syncCarried(t, opt);
+
   if (opt.value === 'skip') {
     t.skip = true; t.phase = 'skip';
     state.skippedCount++;
+    feedPush('skip', `放下 ${t.o.name.split(' · ')[0]}`, `你选的：${opt.label}`);
     pushWx({ from: 'agent', text: opt.reply || '好，这件我不动了。' });
     markPreview(t.o.id, 'done');
-    paintRows(); renderHandoff(); syncMini(); renderTicker();
+    paintRows(); renderHandoff(); syncMini();
     const rest = state.tasks.filter(x => x.phase !== 'done' && x.phase !== 'skip').length;
     if (!rest) finishRun();
     return;
   }
 
+  feedPush('pick', `你定了：${opt.label}`, `${t.o.hand.step} · ${t.o.name.split(' · ')[0]}`);
   pushWx({ from: 'agent', text: opt.reply || '收到，接着写。' });
   t.phase = 'run';
   t.resumeAt = performance.now() - (RUN_MS / state.speed) * 0.6;
   if (t.p < 0.6) t.p = 0.6;
-  paintRows(); renderHandoff(); syncMini(); renderTicker();
+  paintRows(); renderHandoff(); syncMini();
 
   const next = state.tasks.find(x => x.phase === 'wait');
   state.wxPending = next || null;
@@ -273,7 +351,10 @@ function answer(t, opt) {
 }
 
 function settle(t) {
-  if (!t.skip) state.drafted++;
+  if (!t.skip) {
+    state.drafted++;
+    feedPush('done', `写好 ${t.o.name.split(' · ')[0]}`, `第 1 句 · ${(t.o.msg || '').length} 字`);
+  }
   markPreview(t.o.id, 'done');
   if (state.wxPending === t) state.wxPending = null;
 }
@@ -287,7 +368,6 @@ function finishRun() {
   const skipped = state.tasks.filter(t => t.skip);
 
   paintRows();
-  $('#ticker').hidden = true;
   $('#dial').className = 'dial done';
   setRing(1);
   $('#dNum').className = 'd-num';
@@ -304,8 +384,10 @@ function finishRun() {
   $('#h1sub').textContent = parts.join('。') + '。';
   setBtn(false, '再看一遍', '明天这个点我会再看一眼谁还在招');
   $('#ctaNote').textContent = `这一轮共 ${state.tasks.length} 个岗，${doneN} 句写好。明天早上我会再看一眼谁还在招。`;
+  feedPush('end', '这一轮跑完', `${doneN} 句写好了 · 发送键 0 次`);
   syncMini();
   renderHandoff();
+  renderWrapup();
   toast(`写完了 · ${doneN} 句话`);
 }
 
@@ -353,6 +435,14 @@ function matchSummary(o) {
 }
 
 /* ---------- 渲染 ---------- */
+// 成稿区：等你定的岗先写「在等你定」，定了再换成实际的句子
+function msgHTML(o) {
+  if (o.msg) return `<span data-msg>${o.msg}</span><span class="rm-ch" data-hook>${o.hook}</span>`;
+  const t = state.tasks.find(x => x.o.id === o.id);
+  if (t && t.phase === 'wait') return '<i data-pending>在等你定，定了我接着写完这句。</i>';
+  return '<i>这个岗不写话术。理由在匹配结果里。</i>';
+}
+
 function renderRows() {
   $('#rows').innerHTML = state.found.map((o, i) => `
     <div class="row queue" data-row="${o.id}" style="animation-delay:${i * 55}ms">
@@ -367,7 +457,7 @@ function renderRows() {
         <div class="row-log" data-log></div>
         ${matchSummary(o)}
         ${matchBlock(o)}
-        <div class="row-msg">${o.msg ? o.msg + `<span class="rm-ch">${o.hook}</span>` : '<i>这个岗不写话术。理由在匹配结果里。</i>'}</div>
+        <div class="row-msg">${msgHTML(o)}</div>
       </div>
       <div class="row-right">
         <span class="row-amt">${o.v}</span>
@@ -408,6 +498,15 @@ function paintRows() {
     if (t.phase === 'wait') el.classList.add('pinned', 'open');
     const stEl = el.querySelector('[data-st]');
     if (stEl) stEl.textContent = st;
+    // 成稿区跟着状态走；用 key 比对，别每 120ms 重写一次
+    const mbox = el.querySelector('.row-msg');
+    if (mbox) {
+      const key = `${t.o.msg ? t.o.msg.length + '|' + t.o.msg.slice(0, 10) + '|' + t.o.hook : ''}|${t.phase === 'wait'}`;
+      if (mbox.dataset.key !== key) {
+        mbox.dataset.key = key;
+        mbox.innerHTML = msgHTML(t.o);
+      }
+    }
     const lg = el.querySelector('[data-log]');
     if (lg) lg.textContent = t.phase === 'run' ? t.log
       : t.phase === 'wait' ? '已停在第 3 步 · 微信里回一句就继续'
@@ -418,7 +517,7 @@ function paintRows() {
 const RANK = { wait: 0, run: 1, settle: 2, queue: 3, done: 4, skip: 5 };
 function sortRows() {
   const box = $('#rows');
-  const want = state.tasks.slice().sort((a, b) => (RANK[a.phase] - RANK[b.phase]) || 0);
+  const want = state.tasks.slice().sort((a, b) => (RANK[a.phase] - RANK[b.phase]) || (b.o.v - a.o.v));
   const cur = [...box.children];
   let same = true;
   for (let i = 0; i < want.length; i++) {
@@ -442,7 +541,8 @@ function renderHandoff() {
     const skipped = t.skip;
     return `<div class="ho ${answered ? 'answered' : ''}" data-ho="${t.o.id}">
       <div>
-        <div class="ho-t">${t.o.hand.title}</div>
+        ${t.o.hand.step ? `<div class="ho-s">${t.o.hand.step}</div>` : ''}
+      <div class="ho-t">${t.o.hand.title}</div>
         <div class="ho-n">${t.o.hand.need}${t.said ? ` · <b>你回了「${t.said}」</b>` : ''}</div>
       </div>
       <button class="ho-act" data-ho-btn="${t.o.id}" type="button" ${answered || skipped ? 'disabled' : ''}>
@@ -458,15 +558,46 @@ function renderHandoff() {
   });
 }
 
-function renderTicker() {
-  const bits = [];
-  state.tasks.forEach(t => {
-    if (t.phase === 'run') bits.push(`<em>${t.o.name.split(' · ')[1] || t.o.name}</em> <b>${Math.min(5, Math.floor(t.p * 5) + 1)}/5</b>`);
-    else if (t.phase === 'wait') bits.push(`<em>${t.o.name.split(' · ')[1]}</em> <b class="warn">等你回</b>`);
-    else if (t.phase === 'done') bits.push(`<em>${t.o.name.split(' · ')[1]}</em> <b class="ok">写好</b>`);
+/* ---------- 结果分层 ----------
+   跑完给三件事：扫了多少、哪些进了候选、先投哪几个。 */
+function renderWrapup() {
+  const written = state.tasks.filter(t => t.phase === 'done');
+  const skipped = state.tasks.filter(t => t.skip);
+  const answered = state.tasks.filter(t => t.answered).length;
+  const scanned = 47;
+  const dropped = scanned - state.tasks.length;
+
+  $('#wrapup').hidden = false;
+
+  $('#wuList').innerHTML = [
+    ['扫过', `${scanned} 个在招的`, '按 JD 原文 + 你的简历逐条对'],
+    ['过初筛', `${state.tasks.length} 个`, `差太多、位置不对的 ${dropped} 个没进`],
+    ['写好了', `${written.length} 句`, skipped.length ? `${skipped.length} 个你放下了，一句没写` : '每个过筛的都写了句，一条没漏'],
+    ['要你定', `${answered} 处`, '每条判断都留了依据 · 发送键仍是 0'],
+  ].map(([k, v, n], i) => `<li>
+      <span class="wu-i">${i + 1}</span>
+      <div><b>${k} · <em>${v}</em></b><span>${n}</span></div>
+    </li>`).join('');
+
+  const top = written.slice().sort((a, b) => b.o.v - a.o.v).slice(0, 3);
+  $('#wuTop').innerHTML = top.map((t, i) => `
+    <div class="wu-c" data-wu="${t.o.id}">
+      <span class="wu-n">${i + 1}</span>
+      <div class="wu-c-t">
+        <b>${t.o.name}</b>
+        <span>${t.o.src}</span>
+        <p>${t.o.how}</p>
+      </div>
+      <span class="wu-v">${t.o.v}</span>
+    </div>`).join('');
+  $$('[data-wu]').forEach(el => {
+    el.onclick = () => {
+      const row = document.querySelector(`[data-row="${el.dataset.wu}"]`);
+      if (!row) return;
+      row.classList.add('open');
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
   });
-  const line = bits.length ? bits.join(' · ') : '正在准备';
-  $('#tkTrack').innerHTML = `<span>${line}</span><span>${line}</span>`;
 }
 
 function syncMini() {
@@ -503,6 +634,7 @@ function renderWx() {
   chat.innerHTML = state.wxLog.map(m => {
     if (m.from === 'me') return `<div class="wx-msg me"><div class="wx-avatar">我</div><div class="wx-bub">${m.text}</div></div>`;
     return `<div class="wx-msg"><div class="wx-avatar">回</div><div class="wx-bub">
+      ${m.step ? `<span class="wx-s">${m.step}</span>` : ''}
       ${m.title ? `<span class="wx-t">${m.title}</span>` : ''}${m.text}</div></div>`;
   }).join('');
   chat.scrollTop = chat.scrollHeight;

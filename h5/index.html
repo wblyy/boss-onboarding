@@ -7,6 +7,7 @@
   <meta name="theme-color" content="#F2F5FA" />
   <title>回血 · 找工作</title>
   <meta name="description" content="读一遍简历，把今天值得开口的岗挑出来，一个岗一句话。发送键在你手上。" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231F6FF2'/%3E%3Cpath d='M16 25S7 20 7 14a4.4 4.4 0 0 1 9-1 4.4 4.4 0 0 1 9 1c0 6-9 11-9 11Z' fill='%23fff'/%3E%3C/svg%3E" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -67,10 +68,21 @@
       <div class="ho-list" id="hoList"></div>
     </section>
 
-    <!-- 正在写 -->
-    <div class="ticker" id="ticker" hidden>
-      <i></i><span id="tkText">正在准备</span>
-    </div>
+    <!-- 执行的滚动记录：每一步都留痕，不只是「正在写」 -->
+    <section class="feed" id="feed" hidden>
+      <div class="fd-h"><i></i><b>在做什么</b><span id="fdCount">0 步</span></div>
+      <div class="fd-body" id="fdBody"></div>
+    </section>
+
+    <!-- 结果分层 -->
+    <section class="wrapup" id="wrapup" hidden>
+      <div class="wu-h">这一轮的分层</div>
+      <ol class="wu-list" id="wuList"></ol>
+      <div class="wu-top">
+        <div class="wu-top-h">建议先投这三个</div>
+        <div class="wu-top-l" id="wuTop"></div>
+      </div>
+    </section>
 
     <!-- 清单 -->
     <section class="list" id="list" hidden>
@@ -108,6 +120,7 @@
     <div class="sh-grab"></div>
     <div class="sh-src"><b>回血</b><span>服务通知 · 刚刚</span></div>
     <div class="sh-msg" id="shMsg">
+      <p class="sh-step" id="shStep" hidden></p>
       <p class="sh-t" id="shT">需要你回一句</p>
       <p id="shN">…</p>
     </div>
@@ -116,7 +129,7 @@
   </div>
 </div>
 
-<!-- ===== 扫描时弹的二维码：剩下的要你拍板，我发到公众号 ===== -->
+<!-- ===== 扫描时弹的二维码：这一轮跑完，页面就关了 ===== -->
 <div class="qr-sheet" id="qrSheet" hidden>
   <div class="sh-mask"></div>
   <div class="qr-body">
@@ -124,8 +137,8 @@
     <div class="qr-top">
       <div class="qr-ring"><b id="qrNum">0/7</b><span>在读</span></div>
       <div class="qr-txt">
-        <b id="qrTxt">剩下的要你拍板，我发到公众号</b>
-        <p id="qrSub">简历在读，岗位在翻。翻完以后有几件事只有你能定：选哪种语气、补一个只有你知道的数字、要不要试一个够不到的岗。</p>
+        <b id="qrTxt">明天这个点，我再替你扫一遍</b>
+        <p id="qrSub">新岗、要你拍板的事，只在公众号里叫你。页面一关，这轮就断了。</p>
       </div>
     </div>
 
@@ -133,11 +146,10 @@
       <img id="qrImg" src="qr.png" alt="回血 公众号二维码" width="400" height="400" />
     </div>
     <span class="qr-badge">在微信里长按识别</span>
-    <p class="qr-hint">长按 → 「识别图中二维码」 → 关注「回血」。<br>要你拍板的事，就在公众号对话框里回。</p>
-    <p class="qr-fine">演示用占位码 · 正式上线换成你们的公众号</p>
 
-    <button class="qr-ok" id="qrOk" type="button">我已经关注了</button>
-    <button class="qr-skip" id="qrSkip" type="button">先不关注，就在这个页面上回</button>
+    <button class="qr-ok" id="qrOk" type="button">关注「回血」，别断在这儿</button>
+    <button class="qr-skip" id="qrSkip" type="button">先不关注，页面里也能回</button>
+    <p class="qr-fine">演示占位码 · 上线换成真实公众号</p>
   </div>
 </div>
 
