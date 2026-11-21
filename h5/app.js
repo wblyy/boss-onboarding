@@ -16,7 +16,7 @@ const groupName = id => GROUPS.find(g => g.id === id)?.name || '';
 
 const SWEEP = ['resume', 'hx', 'cm', 'sg', 'bc', 'qt', 'yl'];
 
-const STEP_MS = 380;
+const STEP_MS = 760;           // 翻一遍要几秒——人得有时间看清它在读什么
 const RUN_MS = 2600;
 const LANES = 1;               // 手机上一条一条来，眼睛跟得上
 const SPEEDS = [1, 2, 4];
@@ -28,7 +28,10 @@ const state = {
   tasks: [],
   wxPending: null,
   drafted: 0,
-  copied: null
+  copied: null,
+  channel: null,      // null | 'page' | 'pub' —— 要你拍板的事落在哪一侧
+  qrShown: false,
+  pubLog: []          // 公众号那一侧的对话
 };
 
 /* ---------- 环 ---------- */
@@ -67,10 +70,15 @@ function startScan() {
   let i = 0;
   const step = () => {
     const id = SWEEP[i];
-    setRing((i + 1) / SWEEP.length);
+    const pct = (i + 1) / SWEEP.length;
+    setRing(pct);
     $('#hNum').textContent = `${i + 1}/${SWEEP.length}`;
     const o = foundOf(id);
     $('#sub').textContent = o ? `正在看：${o.name}` : '正在读简历，4 段经历';
+    state.scanN = i + 1;
+    syncQrRing(pct);
+    // 翻到一半左右再拦人：先让它证明自己在干活，再谈关注
+    if (i === 3 && !state.qrShown) showQrSheet();
     if (i + 1 < SWEEP.length) { i++; setTimeout(step, STEP_MS); }
     else setTimeout(finishScan, 460);
   };
@@ -92,6 +100,17 @@ function finishScan() {
   renderRows();
   $('#list').hidden = false;
   syncTally();
+
+  // 弹层还开着的话，别让它停在 4/7 装作还在读
+  if (!$('#qrSheet').hidden) {
+    state.scanN = SWEEP.length;
+    syncQrRing(1);
+    const sub = $('#qrSub');
+    if (sub) sub.textContent = `读完了：${usable.length} 个岗对得上，下面开始逐个写。其中 ${state.found.filter(o => o.gate !== 'auto').length} 件要你拍板——关注之后在公众号里回。`;
+    const t = $('#qrTxt');
+    if (t) t.textContent = '写完了要你定的事，我发到公众号';
+  }
+
   setTimeout(startRun, 620);
 }
 
@@ -160,39 +179,110 @@ function updateLog(t) {
   t.log = `${idx + 1}/5 ${t.o.steps[idx][0]} · ${subs[sub]}`;
 }
 
+/* ---------- 扫描时那一下：把决策挪到公众号 ---------- */
+function showQrSheet() {
+  state.qrShown = true;
+  $('#qrSheet').hidden = false;
+  syncQrRing((state.scanN || 0) / SWEEP.length);
+}
+
+function syncQrRing(pct) {
+  const ring = $('.qr-ring');
+  const p = Math.max(0, Math.min(1, pct));
+  if (ring) ring.style.setProperty('--p', (p * 100).toFixed(1));
+  const num = $('#qrNum');
+  if (num) num.textContent = `${state.scanN || 0}/${SWEEP.length}`;
+  const sub = $('#qrSub');
+  if (sub && state.phase === 'scanning') {
+    sub.textContent = `${state.scanN || 0} 处翻过了，还在读。翻完以后有几件事只有你能定——选语气、补一个数字、要不要试一个够不到的岗。`;
+  }
+}
+
+function qrFollow() {
+  state.channel = 'pub';
+  $('#qrSheet').hidden = true;
+  openPub();
+  pubPush({ from: 'sys', text: '你关注了「回血」' });
+  if (state.phase === 'done') {
+    const n = state.tasks.filter(t => t.phase === 'done').length;
+    pubPush({
+      from: 'agent',
+      title: `这一轮已经写好了 ${n} 句`,
+      need: '回页面上挑一句复制走。明天这个点我再扫一遍，有要你定的事，还在这儿说。'
+    });
+  } else {
+    pubPush({
+      from: 'agent',
+      title: state.phase === 'running' ? '简历读完了，正在逐个对' : '简历读完了，岗位在翻',
+      need: '翻完以后有几件事只有你能定：选语气、补一个只有你知道的数字、要不要试一个够不到的岗。都在这儿说。'
+    });
+  }
+  const pend = state.tasks.find(t => t.phase === 'wait');
+  if (pend) setTimeout(() => openPubFor(pend), 600);
+}
+
+function qrSkip() {
+  state.channel = 'page';
+  $('#qrSheet').hidden = true;
+  const pend = state.tasks.find(t => t.phase === 'wait');
+  if (pend) showSheet(pend);
+  toast('行，就在页面上回');
+}
+
 /* ---------- 要你回一句 ---------- */
 function openHandoff(t) {
   if (t.handed) return;
   t.handed = true;
   t.wxAt = hhmm(new Date());
   renderHandoff();
-  if (!state.wxPending) {
-    state.wxPending = t;
-    showSheet(t);
-    toast('有一件要你回一句');
+  if (state.wxPending) return;
+  state.wxPending = t;
+
+  if (state.channel === 'pub') {
+    pubPush({
+      from: 'agent', taskId: t.o.id,
+      title: t.o.hand.title, need: t.o.hand.need, opts: t.o.hand.opts
+    });
+    if ($('#pub').hidden) {
+      syncPubBadge();
+      toast(`一件要你定的事，发到公众号了`);
+    }
+    return;
   }
+  // 二维码还挡在上面就先不弹，等你选完再弹
+  if (!$('#qrSheet').hidden) return;
+  showSheet(t);
+  toast('有一件要你回一句');
 }
 
-function answer(t, opt) {
+function answer(t, opt, via) {
   t.answered = true;
   t.said = opt.label;
 
   if (opt.value === 'skip') {
     t.skip = true; t.phase = 'skip';
-    renderHandoff(); paintRows(); syncTally();
+    if (via === 'pub') pubPush({ from: 'me', text: opt.label }, true);
+    renderHandoff(); paintRows(); syncTally(); renderPub();
     toast('好，这件不办了');
+    if (state.channel === 'pub') pubPush({ from: 'agent', text: opt.reply || '好，这个岗放下。' });
     const rest = state.tasks.filter(x => x.phase !== 'done' && x.phase !== 'skip');
     if (!rest.length) finishRun();
   } else {
     t.phase = 'run';
     t.resumeAt = performance.now() - (RUN_MS / state.speed) * 0.6;
-    renderHandoff(); paintRows();
+    if (via === 'pub') pubPush({ from: 'me', text: opt.label }, true);
+    renderHandoff(); paintRows(); syncTally(); renderPub();
     toast('收到，接着写');
+    if (state.channel === 'pub') pubPush({ from: 'agent', text: opt.reply || '收到，接着写。' });
   }
 
+  if (via === 'pub') syncPubBadge();
   const next = state.tasks.find(x => x.phase === 'wait' && x !== t);
   state.wxPending = next || null;
-  if (next) setTimeout(() => { showSheet(next); }, 500);
+  if (next) setTimeout(() => {
+    if (state.channel === 'pub') openPubFor(next);
+    else showSheet(next);
+  }, 700);
   else closeSheet();
 }
 
@@ -219,9 +309,13 @@ function renderHandoff() {
   $$('[data-ho]').forEach(b => {
     b.onclick = () => {
       const t = state.tasks.find(x => x.o.id === b.dataset.ho);
-      if (t && t.phase === 'wait') showSheet(t);
+      if (!t) return;
+      if (state.channel === 'pub') { openPubFor(t); return; }
+      if (t.phase === 'wait') showSheet(t);
     };
   });
+  const hint = $('#hoHint');
+  if (hint) hint.textContent = state.channel === 'pub' ? '都在公众号里' : '点开直接回';
 }
 
 function showSheet(t) {
@@ -242,6 +336,85 @@ function closeSheet() {
   state.sheetFor = null;
 }
 
+/* ---------- 公众号那一侧 ---------- */
+function pubPush(m, quiet) {
+  state.pubLog.push({ ...m, at: hhmm(new Date()) });
+  renderPub();
+  if (!quiet) syncPubBadge();
+}
+
+// 某个岗已经处理过，就把那条消息上的按钮收掉
+function isSettled(id) {
+  const t = state.tasks.find(x => x.o.id === id);
+  return !!t && (t.answered || t.phase === 'done' || t.phase === 'skip');
+}
+
+function renderPub() {
+  const box = $('#pubChat');
+  if (!box) return;
+  box.innerHTML = `<div class="pub-sys">以下是「回血」发给你的服务通知<br>回一句就行，不用打字</div>` +
+    state.pubLog.map(m => {
+      if (m.from === 'sys') return `<div class="pub-sys">${m.text}</div>`;
+      const me = m.from === 'me';
+      const opts = m.opts && !isSettled(m.taskId)
+        ? `<div class="pub-opts">${m.opts.map((o, i) =>
+            `<button class="pub-opt" type="button" data-pub-opt="${m.taskId}:${i}">${o.label}</button>`).join('')}</div>`
+        : '';
+      const settled = m.opts && isSettled(m.taskId)
+        ? `<div class="pb-done">已回，接着写了</div>` : '';
+      return `<div class="pub-msg ${me ? 'me' : ''}">
+        <div class="pub-av ${me ? 'me' : ''}">${me ? '我' : '回'}</div>
+        <div class="pub-bub">
+          ${m.title ? `<div class="pb-t">${m.title}</div>` : ''}
+          ${m.need ? `<div class="pb-n">${m.need}</div>` : ''}
+          ${m.text && !m.opts ? m.text : ''}
+          ${opts}${settled}
+        </div>
+      </div>`;
+    }).join('');
+  $$('[data-pub-opt]').forEach(b => {
+    b.onclick = () => {
+      const [id, i] = b.dataset.pubOpt.split(':');
+      const t = state.tasks.find(x => x.o.id === id);
+      if (!t || isSettled(id)) return;
+      answer(t, t.o.hand.opts[+i], 'pub');
+    };
+  });
+  box.scrollTop = box.scrollHeight;
+}
+
+function openPubFor(t) {
+  openPub();
+  const has = state.pubLog.some(m => m.taskId === t.o.id);
+  if (!has) pubPush({
+    from: 'agent', taskId: t.o.id,
+    title: t.o.hand.title, need: t.o.hand.need, opts: t.o.hand.opts
+  });
+  pubPush({ from: 'sys', text: `还差你一句 · ${t.o.name.split(' · ')[1] || t.o.name}` });
+}
+
+function openPub() {
+  $('#pub').hidden = false;
+  syncPubBadge();
+  renderPub();
+}
+function closePub() {
+  $('#pub').hidden = true;
+  syncPubBadge();
+}
+
+// 顶栏那个小红点：还有几件在等你
+function syncPubBadge() {
+  const wait = state.tasks.filter(t => t.phase === 'wait').length;
+  const btn = $('#pubBtn'), badge = $('#pubBadge');
+  if (!btn) return;
+  btn.hidden = state.channel !== 'pub';
+  if (badge) { badge.textContent = String(wait); badge.hidden = wait === 0; }
+  btn.classList.toggle('hot', wait > 0);
+  const hint = $('#hoHint');
+  if (hint) hint.textContent = state.channel === 'pub' ? '都在公众号里' : '点开直接回';
+}
+
 function finishRun() {
   if (state.phase === 'done') return;
   state.phase = 'done';
@@ -260,6 +433,15 @@ function finishRun() {
   $('#barNote').textContent = '这一轮话已写好，你挑一个复制走';
   paintRows(); syncTally(); renderHandoff();
   toast(`${doneN} 句话写好了`);
+
+  if (state.channel === 'pub') {
+    pubPush({
+      from: 'agent',
+      title: `这一轮写完了，${doneN} 句`,
+      need: '回到页面上挑一句复制走。发送键我一次都没碰，也不会碰。'
+    });
+    pubPush({ from: 'sys', text: '明天的这个点我会再看一眼谁还在招' });
+  }
 }
 
 /* ---------- 匹配 ---------- */
@@ -406,6 +588,7 @@ function syncTally() {
   set('#tDone', done);
   set('#tNeed', wait);
   set('#tSend', 0);          // 永远是 0——这是产品承诺
+  syncPubBadge();
 }
 
 /* ---------- 复制 ---------- */
@@ -462,5 +645,10 @@ $('#bigBtn').onclick = () => {
 };
 
 $$('[data-sh-close]').forEach(el => el.onclick = closeSheet);
+
+$('#qrOk').onclick = qrFollow;
+$('#qrSkip').onclick = qrSkip;
+$('#pubBtn').onclick = openPub;
+$('#pubBack').onclick = closePub;
 
 setRing(0);

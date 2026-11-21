@@ -21,7 +21,10 @@
       </svg>
       <div class="top-t"><b>回血</b><span>这一段，我陪你走</span></div>
     </div>
-    <div class="top-r"><i></i>简历不出手机</div>
+    <div class="top-r">
+      <button class="top-pub" id="pubBtn" type="button" hidden>公众号<i id="pubBadge">0</i></button>
+      <i></i>简历不出手机
+    </div>
   </header>
 
   <main class="main" id="main">
@@ -60,7 +63,7 @@
 
     <!-- 需要你 -->
     <section class="handoff" id="handoff" hidden>
-      <div class="ho-h"><b>要你回一句 <i id="hoCount">0</i></b><span>点开直接回</span></div>
+      <div class="ho-h"><b>要你回一句 <i id="hoCount">0</i></b><span id="hoHint">点开直接回</span></div>
       <div class="ho-list" id="hoList"></div>
     </section>
 
@@ -110,6 +113,45 @@
     </div>
     <div class="sh-opts" id="shOpts"></div>
     <button class="sh-x" data-sh-close type="button">稍后再说</button>
+  </div>
+</div>
+
+<!-- ===== 扫描时弹的二维码：剩下的要你拍板，我发到公众号 ===== -->
+<div class="qr-sheet" id="qrSheet" hidden>
+  <div class="sh-mask"></div>
+  <div class="qr-body">
+    <div class="qr-grab"></div>
+    <div class="qr-top">
+      <div class="qr-ring"><b id="qrNum">0/7</b><span>在读</span></div>
+      <div class="qr-txt">
+        <b id="qrTxt">剩下的要你拍板，我发到公众号</b>
+        <p id="qrSub">简历在读，岗位在翻。翻完以后有几件事只有你能定：选哪种语气、补一个只有你知道的数字、要不要试一个够不到的岗。</p>
+      </div>
+    </div>
+
+    <div class="qr-code">
+      <img id="qrImg" src="qr.png" alt="回血 公众号二维码" width="400" height="400" />
+    </div>
+    <span class="qr-badge">在微信里长按识别</span>
+    <p class="qr-hint">长按 → 「识别图中二维码」 → 关注「回血」。<br>要你拍板的事，就在公众号对话框里回。</p>
+    <p class="qr-fine">演示用占位码 · 正式上线换成你们的公众号</p>
+
+    <button class="qr-ok" id="qrOk" type="button">我已经关注了</button>
+    <button class="qr-skip" id="qrSkip" type="button">先不关注，就在这个页面上回</button>
+  </div>
+</div>
+
+<!-- ===== 公众号对话：决策在这一侧完成 ===== -->
+<div class="pub" id="pub" hidden>
+  <header class="pub-top">
+    <button class="pub-back" id="pubBack" type="button" aria-label="返回页面">‹</button>
+    <div class="pub-t"><b>回血</b><span>服务号</span></div>
+    <span class="pub-more">···</span>
+  </header>
+  <div class="pub-chat" id="pubChat"></div>
+  <div class="pub-in">
+    <span class="pub-ph" id="pubPh">演示：点上面的选项就行，不用打字</span>
+    <i class="pub-kb">⌾</i>
   </div>
 </div>
 
