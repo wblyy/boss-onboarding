@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>回血 · 今天三个</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231F6FF2'/%3E%3Cpath d='M16 25S7 20 7 14a4.4 4.4 0 0 1 9-1 4.4 4.4 0 0 1 9 1c0 6-9 11-9 11Z' fill='%23fff'/%3E%3C/svg%3E" />
+<style>
+:root{
+  --bg:#EDF1F7;--card:#FFFFFF;
+  --ink:#141E2A;--ink-2:#3E4E64;--ink-3:#6A7B91;--ink-4:#9BAABD;
+  --line:#E4EAF3;--line-2:#F0F4F9;
+  --blue:#1F6FF2;--blue-soft:#E9F1FF;--blue-tint:#F4F8FF;
+  --green:#178A63;--amber:#BC7310;--amber-soft:#FCF2E1;
+  --sans:"PingFang SC","WenQuanYi Zen Hei","Noto Sans SC","Microsoft YaHei",sans-serif;
+  --mono:"SFMono-Regular",ui-monospace,Menlo,Consolas,"WenQuanYi Zen Hei Mono",monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:820px;background:var(--bg);color:var(--ink);
+  font-family:var(--sans);-webkit-font-smoothing:antialiased;
+  font-variant-numeric:tabular-nums}
+
+/* ================= 第一屏 ================= */
+.hero{padding:48px 44px 36px}
+.bar{display:flex;align-items:center;gap:9px;margin-bottom:36px}
+.bar svg{width:23px;height:23px;flex:none}
+.bar b{font-size:15px;font-weight:600;color:var(--ink-2)}
+.bar span{margin-left:auto;font-family:var(--mono);font-size:13px;color:var(--ink-4)}
+
+.verdict{font-size:60px;font-weight:800;line-height:1.12;letter-spacing:-.03em}
+.verdict em{font-style:normal;color:var(--blue)}
+.why{margin-top:18px;font-size:24px;line-height:1.5;color:var(--ink-2);letter-spacing:-.005em}
+.why b{color:var(--ink);font-weight:700}
+
+.strip{margin-top:36px;display:flex;align-items:center;gap:0}
+.s-i{display:flex;align-items:center;gap:8px;padding:9px 16px 9px 12px;border-radius:10px}
+.s-i.on{background:var(--card);box-shadow:0 1px 2px rgba(20,40,75,.06),0 3px 10px rgba(20,40,75,.05)}
+.s-i i{width:22px;height:22px;border-radius:7px;background:#E4EAF3;color:var(--ink-4);
+  font-family:var(--mono);font-size:11.5px;font-weight:700;display:grid;place-items:center;font-style:normal}
+.s-i.on i{background:var(--blue);color:#fff}
+.s-i b{font-size:16.5px;font-weight:600;color:var(--ink-3)}
+.s-i.on b{color:var(--ink)}
+
+/* ================= 怎么用（只说一次） ================= */
+.how{margin:16px 44px 0;background:var(--blue-tint);border:1px solid #DCE8FA;border-radius:14px;
+  padding:16px 20px 17px}
+.how-k{font-size:12px;letter-spacing:.14em;color:var(--blue);font-weight:700;margin-bottom:7px}
+.how-line{font-size:16.5px;line-height:1.6;color:var(--ink-2)}
+.how-line em{font-style:normal;font-weight:800;color:var(--blue);font-family:var(--mono)}
+
+
+/* ================= 岗位 ================= */
+.list{padding:0 44px;display:flex;flex-direction:column;gap:15px}
+.job{background:var(--card);border-radius:19px;
+  box-shadow:0 1px 2px rgba(20,40,75,.04),0 5px 20px rgba(20,40,75,.05);overflow:hidden}
+.job.first{box-shadow:0 2px 4px rgba(20,40,75,.05),0 10px 28px rgba(31,111,242,.12)}
+
+.j-head{display:flex;align-items:flex-start;gap:13px;padding:21px 22px 15px}
+.j-n{width:29px;height:29px;border-radius:8px;background:#F0F4FA;color:var(--ink-4);
+  display:grid;place-items:center;flex:none;font-family:var(--mono);font-size:13.5px;font-weight:700;margin-top:1px}
+.job.first .j-n{background:var(--blue);color:#fff}
+.j-t{flex:1;min-width:0}
+.j-name{font-size:21px;font-weight:700;line-height:1.3;letter-spacing:-.008em}
+.j-name span{font-size:17px;font-weight:500;color:var(--ink-3)}
+.j-meta{margin-top:4px;font-size:14.5px;color:var(--ink-3)}
+.j-tag{flex:none;font-size:13px;font-weight:600;padding:5px 10px;border-radius:7px;white-space:nowrap;
+  background:var(--blue-soft);color:var(--blue);margin-top:3px}
+.j-tag.warn{background:var(--amber-soft);color:var(--amber)}
+
+/* 匹配说明：一段主、一句辅，不排比 */
+.j-why{padding:0 22px 4px}
+.j-why p{font-size:17px;line-height:1.72;color:var(--ink-2)}
+.j-why p q{quotes:"「" "」";color:var(--ink);font-weight:600}
+.j-why p b{font-weight:700;color:var(--ink)}
+.j-why .aside{margin-top:8px;font-size:15px;line-height:1.65;color:var(--ink-3)}
+.j-why .aside.caveat{color:var(--amber)}
+
+/* 二维码 */
+.j-go{margin:16px 22px 0;padding:16px 0 19px;border-top:1px solid var(--line);
+  display:flex;align-items:center;gap:16px}
+.j-go .qr-txt{flex:1;min-width:0}
+.j-go .qr-key{font-size:19px;line-height:1.4;color:var(--ink);font-weight:600}
+.j-go .qr-lead{margin-top:6px;font-size:13.5px;color:var(--ink-4);line-height:1.5}
+.j-go .qr-key em{font-style:normal;font-weight:800;color:var(--blue);background:var(--blue-soft);
+  padding:1px 7px;border-radius:5px;font-family:var(--mono)}
+.qr{flex:none;display:flex;flex-direction:column;align-items:center;gap:6px}
+.qr img{width:100px;height:100px;border-radius:8px;display:block}
+.qr span{font-size:11.5px;color:#B6C3D3;letter-spacing:.04em}
+
+/* ================= 尾 ================= */
+.foot{padding:24px 44px 42px}
+.f-note{display:flex;justify-content:space-between;align-items:center;
+  font-size:12.5px;color:var(--ink-4);padding-top:4px}
+.f-note span{font-family:var(--mono);letter-spacing:.03em}
+.f-demo{margin-top:8px;text-align:center;font-size:11.5px;color:#B4C0CF}
+</style>
+</head>
+<body>
+
+<!-- 第一屏 31 字 -->
+<section class="hero">
+  <div class="bar">
+    <svg viewBox="0 0 26 26" fill="none"><path d="M13 22S3.6 16.6 3.6 10.4a4.9 4.9 0 0 1 9.4-1.6 4.9 4.9 0 0 1 9.4 1.6C22.4 16.6 13 22 13 22Z" fill="#1F6FF2"/></svg>
+    <b>回血</b>
+    <span>11/25 周三</span>
+  </div>
+
+  <h1 class="verdict">先投<em>恒犀</em>。</h1>
+  <p class="why">他把「流程梳理」写在第一条，你拆过 <b>31 个节点</b>。</p>
+
+  <div class="strip">
+    <div class="s-i on"><i>1</i><b>恒犀</b></div>
+    <div class="s-i"><i>2</i><b>蝉鸣</b></div>
+    <div class="s-i"><i>3</i><b>拾光</b></div>
+  </div>
+</section>
+
+
+<main class="list">
+
+  <!-- 1 -->
+  <article class="job first">
+    <div class="j-head">
+      <span class="j-n">1</span>
+      <div class="j-t">
+        <div class="j-name">恒犀科技 <span>· B端产品经理</span></div>
+        <div class="j-meta">18-25k · 上海静安 · 成立 2 年</div>
+      </div>
+      <span class="j-tag">HR 昨天在线</span>
+    </div>
+    <div class="j-why">
+      <p>他们第一条就写 <q>能把手工流程梳理成系统</q>。你在上一家干的就是这个：销售和交付的线下流程拆成 <b>31 个节点</b>，做成可配置的工单，交付周期 14 天压到 6 天。</p>
+      <p class="aside">从 0 到 1 你做过两次，SaaS 做了 4 年。</p>
+    </div>
+    <div class="j-go">
+      <div class="qr-txt">
+        <div class="qr-key">公众号回 <em>1</em> 拿话术</div>
+        <div class="qr-lead">或者直接扫码打开这个岗</div>
+      </div>
+      <div class="qr"><img src="card/hx.png" alt="恒犀科技 岗位二维码" /><span>岗位码</span></div>
+    </div>
+  </article>
+
+  <!-- 2 -->
+  <article class="job">
+    <div class="j-head">
+      <span class="j-n">2</span>
+      <div class="j-t">
+        <div class="j-name">蝉鸣数据 <span>· 流程产品经理</span></div>
+        <div class="j-meta">20-28k · 杭州滨江 · 异地</div>
+      </div>
+      <span class="j-tag">挂了 11 天</span>
+    </div>
+    <div class="j-why">
+      <p>教务、排课、结算三套并一套，麻烦的不是功能，是 <b>7 个部门</b>的权限边界。你收过一遍这个摊子。</p>
+      <p class="aside caveat">异地。你简历上只写了上海。</p>
+    </div>
+    <div class="j-go">
+      <div class="qr-txt">
+        <div class="qr-key">公众号回 <em>2</em> 拿话术</div>
+        <div class="qr-lead">或者直接扫码打开这个岗</div>
+      </div>
+      <div class="qr"><img src="card/cm.png" alt="蝉鸣数据 岗位二维码" /><span>岗位码</span></div>
+    </div>
+  </article>
+
+  <!-- 3 -->
+  <article class="job">
+    <div class="j-head">
+      <span class="j-n">3</span>
+      <div class="j-t">
+        <div class="j-name">拾光教育 <span>· 产品经理（B端）</span></div>
+        <div class="j-meta">16-22k · 上海徐汇 · 公司 12 人</div>
+      </div>
+      <span class="j-tag warn">薪资贴底线</span>
+    </div>
+    <div class="j-why">
+      <p>两年教培，你做的是教务系统，客户就是这批校长。</p>
+      <p class="aside caveat">16-22k，公司 12 个人。贴着你的底线，去之前想清楚。</p>
+    </div>
+    <div class="j-go">
+      <div class="qr-txt">
+        <div class="qr-key">公众号回 <em>3</em> 拿话术</div>
+        <div class="qr-lead">或者直接扫码打开这个岗</div>
+      </div>
+      <div class="qr"><img src="card/sg.png" alt="拾光教育 岗位二维码" /><span>岗位码</span></div>
+    </div>
+  </article>
+
+</main>
+
+<!-- 走法：读完三个再给，附在清单之后 -->
+<section class="how">
+  <div class="how-k">怎么跟进</div>
+  <div class="how-line">公众号回 <em>1</em>／<em>2</em>／<em>3</em>，话术发你；扫码进岗，粘上，你按发送。</div>
+</section>
+
+<footer class="foot">
+  <div class="f-note">
+    <span>47 在招 · 对上 6 · 今天给 3</span>
+    <span>发送 0 次</span>
+  </div>
+  <p class="f-demo">演示数据 · 岗位与岗位码均为占位</p>
+</footer>
+
+</body>
+</html>
